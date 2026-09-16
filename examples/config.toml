@@ -1,0 +1,38 @@
+# Codex Prism — edit and press Ctrl+R to reload.
+[appearance]
+theme = "prism"                  # prism, ember, daylight
+syntax_theme = "monokai"         # any Pygments theme
+line_numbers = true
+wrap = true
+show_sidebar = true
+output_preview_lines = 4
+page_lines = 160                 # rendering pages; stored output is never clipped
+reasoning = "both"               # both, content, summary
+
+# Override any palette key: background, surface, panel, foreground, muted,
+# accent, reasoning, command, output, assistant, user, error.
+[colors]
+# reasoning = "#c4a7e7"
+# command = "#e8c07d"
+
+# Pygments token styles: Token.Name, Token.Literal.String, etc.
+[syntax]
+# "Token.Name.Builtin" = "bold #72d5ce"
+# "Token.Literal.String" = "#a8d49a"
+
+[keys]
+next = "j"
+previous = "k"
+input = "i"
+search = "slash"
+toggle_output = "o"
+expand_all = "shift+o"
+copy_command = "y"
+copy_output = "shift+y"
+follow = "f"
+
+[behavior]
+record = true
+compress_recordings = true
+# Additional Textual CSS, resolved relative to this config file:
+# css = "custom.tcss"

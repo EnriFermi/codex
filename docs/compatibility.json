@@ -1,0 +1,91 @@
+{
+  "codex": "codex-cli 0.153.3",
+  "result": "compatible",
+  "transport": "stdio JSON-RPC",
+  "contract": {
+    "InitializeParams": {
+      "fields_checked": [
+        "clientInfo"
+      ],
+      "schema_sha256": "6f0094be9a65242ec779a40794cbd4fdfa32fca1e45084a16adfb50501d33ea2"
+    },
+    "ThreadStartParams": {
+      "fields_checked": [
+        "approvalPolicy",
+        "cwd",
+        "model",
+        "sandbox"
+      ],
+      "schema_sha256": "792e2f32e37cece971bd616664ea2053741acbed4e9c92e9d1766427718f2ecd"
+    },
+    "ThreadResumeParams": {
+      "fields_checked": [
+        "threadId"
+      ],
+      "schema_sha256": "8ac68582a81d60940b10b330be8546123f56bfe246b56f8a4f121da00f347cf2"
+    },
+    "TurnStartParams": {
+      "fields_checked": [
+        "input",
+        "threadId"
+      ],
+      "schema_sha256": "a3835e8c1e942e4b358e1a670939b89918b16c4d13105a579899892b7ade6dea"
+    },
+    "TurnSteerParams": {
+      "fields_checked": [
+        "expectedTurnId",
+        "input",
+        "threadId"
+      ],
+      "schema_sha256": "4a52eb76e7a717bb388484ccd7538737fca0df35481fc30a21e259f1bfe96e37"
+    },
+    "TurnInterruptParams": {
+      "fields_checked": [
+        "threadId",
+        "turnId"
+      ],
+      "schema_sha256": "6dff382dae73d1dbc58406ed045605f647e7a49660e2540fbd2c6c24d60c5f2b"
+    },
+    "ReasoningTextDeltaNotification": {
+      "fields_checked": [
+        "contentIndex",
+        "delta",
+        "itemId"
+      ],
+      "schema_sha256": "16cdc13080a7523b44f00fb6fdb660c56a7c4c8cda96b2f9b87b7e72264170fb"
+    },
+    "ReasoningSummaryTextDeltaNotification": {
+      "fields_checked": [
+        "delta",
+        "itemId",
+        "summaryIndex"
+      ],
+      "schema_sha256": "895bdca00b4674634c25a5c4d1f82e55e65767d81ddcac4bb7b00aa3d438e62f"
+    },
+    "CommandExecutionOutputDeltaNotification": {
+      "fields_checked": [
+        "delta",
+        "itemId"
+      ],
+      "schema_sha256": "841fa94098ddb63a71acf1bf5f9e3fac1b0491f4ed3fa8ef86f9a6ca1260b539"
+    },
+    "CommandExecutionRequestApprovalResponse": {
+      "fields_checked": [
+        "decision"
+      ],
+      "schema_sha256": "6d0767113e22f311381809b6b236b0dde2b99b01992879c26bf7b1ea0e003cb7"
+    },
+    "FileChangeRequestApprovalResponse": {
+      "fields_checked": [
+        "decision"
+      ],
+      "schema_sha256": "b95b03ee6be674e25cee2e863cc135a28620e1070addd2f34685aadee27cde08"
+    },
+    "ToolRequestUserInputResponse": {
+      "fields_checked": [
+        "answers"
+      ],
+      "schema_sha256": "5073b245f741fa8ce62ec52e4dd1809b7831f9c4284c279a78abc9b171f8e3f2"
+    }
+  }
+}

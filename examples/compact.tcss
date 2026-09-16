@@ -1,0 +1,4 @@
+/* Enable with [behavior] css = "compact.tcss" in a neighboring config. */
+.trace-card { padding: 0 1; }
+#sidebar { width: 23; }
+#composer { height: 5; }

@@ -1,0 +1,82 @@
+{
+  "date": "2026-09-16T18:36:30.722195+00:00",
+  "checks": {
+    "lint": {
+      "passed": true
+    },
+    "format": {
+      "passed": true
+    },
+    "tests": {
+      "passed": true,
+      "summary": "26 passed in 9.48s"
+    },
+    "protocol": {
+      "passed": true
+    },
+    "doctor": {
+      "passed": true,
+      "details": {
+        "codex": "codex-cli 0.153.3",
+        "executable": "/home/coder/.local/bin/codex",
+        "handshake": "ok",
+        "server": "codex_prism/0.153.3 (Ubuntu 20.4.0; x86_64) vscode/1.106.3 (codex_prism; 0.1.0)",
+        "prism": "0.1.0"
+      }
+    },
+    "pty_launch_and_ctrl_q": {
+      "passed": true,
+      "exit_code": 0
+    },
+    "package_contents": {
+      "passed": true,
+      "css_in_wheel": true,
+      "private_traces_excluded": true
+    }
+  },
+  "live_short": {
+    "status": "completed",
+    "model": "gpt-6-astra",
+    "commands": 1,
+    "output_ok": true,
+    "reply_ok": true,
+    "reasoning_content_chars": 0,
+    "reasoning_summary_chars": 27,
+    "server_requests": 0,
+    "methods": {
+      "configWarning": 1,
+      "remoteControl/status/changed": 1,
+      "thread/started": 1,
+      "mcpServer/startupStatus/updated": 2,
+      "thread/status/changed": 2,
+      "turn/started": 1,
+      "item/started": 5,
+      "item/completed": 5,
+      "item/agentMessage/delta": 13,
+      "thread/tokenUsage/updated": 2,
+      "account/rateLimits/updated": 2,
+      "item/reasoning/summaryPartAdded": 1,
+      "item/reasoning/summaryTextDelta": 1,
+      "turn/completed": 1
+    }
+  },
+  "live_long_output": {
+    "status": "completed",
+    "commands": 1,
+    "outputDelta_events": 0,
+    "outputs": [
+      {
+        "bytes": 32000,
+        "lines_received": 2000,
+        "upstream_truncated": false
+      }
+    ]
+  },
+  "live_resume": {
+    "resumed": true,
+    "history_mode": "paginated",
+    "turns": 1,
+    "items": 2,
+    "marker_found": true
+  }
+}
