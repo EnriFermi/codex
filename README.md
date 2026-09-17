@@ -13,7 +13,8 @@ Prism — отдельный клиент для установленного `c
 Нужны Python 3.11+, [uv](https://docs.astral.sh/uv/) и установленный, авторизованный Codex (`codex login`). Демо и просмотр записей работают без Codex и без обращения к модели.
 
 ```bash
-cd codex-prism
+git clone git@github.com:EnriFermi/codex.git
+cd codex
 uv sync --locked
 uv run codex-prism --demo
 uv run codex-prism --doctor
@@ -122,18 +123,13 @@ uv build
 
 ## GitHub
 
-Локальный репозиторий независим от родительского workspace. Для создания приватного репозитория после авторизации GitHub:
+Репозиторий: [EnriFermi/codex](https://github.com/EnriFermi/codex). Подключение и отправка изменений используют SSH:
 
 ```bash
-gh auth login
-gh repo create enrifermi/codex-prism --private --source=. --remote=origin --push
-```
-
-Если репозиторий уже создан через сайт:
-
-```bash
-git remote add origin git@github.com:enrifermi/codex-prism.git
-git push -u origin main
+git remote -v
+# origin  git@github.com:EnriFermi/codex.git
+git push origin main
+git push origin v0.1.0
 ```
 
 MIT. Unofficial client; not an OpenAI product.
