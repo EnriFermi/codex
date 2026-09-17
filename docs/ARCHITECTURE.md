@@ -41,13 +41,13 @@ The upstream app-server routes `ReasoningRawContentDelta` and command-output del
 
 ## Updating Codex
 
-1. Update Codex using the same installation method you already use. Prism neither upgrades nor replaces the executable.
-2. Run `codex-prism --doctor` to verify version and transport initialization without a model call.
-3. Run `uv run python scripts/check_protocol.py`. This checks the presence of fields Prism consumes; it is a structural guard, not a proof of behavioral compatibility.
-4. Run `uv run pytest -q` and, when needed, the opt-in `scripts/smoke_live.py` integration check.
-5. Record a reviewed new schema manifest using `uv run python scripts/check_protocol.py --write` and commit it alongside necessary adapter changes.
+Follow [UPDATING.md](UPDATING.md). The scheduled workflow downloads a complete stable package alongside the working installation, verifies its digest, runs the offline suite/build, compares consumed field shapes against `protocol-baseline.json`, and initializes a dedicated app-server with a temporary profile. It opens a report-only PR after success; it never installs a default engine or changes the reviewed baseline.
 
-For rollback, point `--codex /absolute/path/to/older/codex` at a retained binary. Prism and engine releases can be versioned independently. There is no upstream engine fork to merge.
+`compatibility.json` is the original field-presence report for 0.153.3. `protocol-baseline.json` records the reviewed structural contract from that same engine. A future `codex-candidate.json` records automated checks on a newer release, explicitly without model validation. None of these is a promise that every provider emits every event.
+
+The structural guard resolves references and compares types, enums, constraints, and nested shapes for the declared consumed fields. It checks method availability and new required request/reply fields. Unknown top-level optional fields are ignored; changed nested shapes conservatively require review even if backward compatible. Coverage is declared in `scripts/check_protocol.py`, not the entire upstream protocol.
+
+For rollback, point `--codex /absolute/path/to/older/package/bin/codex` at a retained complete package, including resources and companion executables. Prism and engine releases can be versioned independently. There is no upstream engine fork to merge.
 
 ## Updating Prism
 

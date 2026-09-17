@@ -11,6 +11,7 @@ os.environ["COLORTERM"] = "truecolor"
 from codex_prism.app import Prism  # noqa: E402
 from codex_prism.config import Settings  # noqa: E402
 from codex_prism.demo import demo_trace  # noqa: E402
+from codex_prism.widgets import Prompt  # noqa: E402
 
 
 async def main():
@@ -26,6 +27,11 @@ async def main():
         app.action_toggle_output()
         await pilot.pause()
         app.save_screenshot("prism-output.svg", path=str(root))
+        app.select_entry("demo-search")
+        app.action_focus_input()
+        app.query_one("#composer", Prompt).load_text("/")
+        await pilot.pause()
+        app.save_screenshot("prism-commands.svg", path=str(root))
     for path in root.glob("prism*.svg"):
         path.write_text("\n".join(line.rstrip() for line in path.read_text().splitlines()) + "\n")
 

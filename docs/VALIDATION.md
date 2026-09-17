@@ -1,4 +1,14 @@
-# Validation — 2026-09-16
+# Validation
+
+## Maintenance and input fixes — 2026-09-17
+
+The expanded offline suite passes on Python 3.11 and 3.12. It covers ordinary Enter, Ctrl+Enter, LF/Ctrl+J, Alt+Enter and the Send button through the fake app-server; multiline input and paste; command filtering, keyboard/mouse completion, argument hints, Escape, and an 80 × 24 terminal. A separate Linux PTY check sent actual CR, LF and CSI-u Ctrl+Enter bytes through the real terminal driver: all three completed a fake-server turn and exited cleanly. No model was called in these checks.
+
+The official complete **Codex 0.154.0 Linux x86_64 musl** package passed SHA-256 verification, consumed-field structural comparison against 0.153.3 and app-server initialization with a temporary profile. Its checked shapes were identical. Full model behavior on 0.154.0 remains untested; the working installation remains 0.153.3.
+
+The updater tests reject prereleases, missing packages/digests, unexpected URLs, downgrades, consumed-type/enum changes and newly required fields. They verify credential isolation and removal of stale successful reports. The GitHub workflow passes local actionlint validation; executing it and creating PRs remotely depend on the repository's Actions settings. The private repository's Actions status cannot be read with the available SSH-only authentication.
+
+## Initial release — 2026-09-16
 
 Checked on Linux, Python 3.12.13, Textual 1.0.0, and **Codex CLI 0.153.3**. Test inputs and screenshots are synthetic. Real session recordings remain in ignored `private/`; no actual reasoning text, credentials, or user conversations are checked in.
 
@@ -30,7 +40,7 @@ The long-output test received output through the completed command item, with ze
 - Explicit approval selection, questions keyed by their IDs, and cancellation granting no permissions.
 - A complete UI → subprocess → command/output → completed answer round trip using a controlled fake app-server; no model credentials needed for the test suite.
 
-The final count and status are recorded in [validation-results.json](validation-results.json). Lint, formatting, build and installed CLI checks are run separately. The CI workflow is prepared for Python 3.11 and 3.12; remote CI has not been run because the repository has not been published.
+The initial release count and status are recorded in [validation-results.json](validation-results.json). Lint, formatting, build and installed CLI checks are run separately. The CI workflow covers Python 3.11 and 3.12; remote run status has not been independently verified.
 
 ## Visual checks
 

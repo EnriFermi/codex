@@ -40,7 +40,12 @@ Screen { background: $background; color: $foreground; }
 .output-body { margin-top: 1; }
 #composer-shell { height: auto; margin: 0 2; border-top: solid $panel; }
 #composer-label { height: 1; color: $accent; }
-#composer { height: 4; max-height: 12; border: none; background: $surface; }
+#composer-row { height: 4; }
+#composer { width: 1fr; height: 4; max-height: 12; border: none; background: $surface; }
+#send-prompt { min-width: 10; width: 10; height: 3; margin-left: 1; }
+#composer-help { height: auto; max-height: 2; color: $text-muted; }
+#command-menu { height: auto; max-height: 9; border: round $accent; background: $surface; }
+#command-menu > .option-list--option-highlighted { background: $panel; color: $accent; }
 #hint { height: 1; padding: 0 2; color: $text-muted; }
 Footer { background: $surface; }
 ModalScreen { align: center middle; background: $background 75%; }

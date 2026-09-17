@@ -1,0 +1,104 @@
+name: Check upstream Codex
+
+on:
+  schedule:
+    - cron: '37 6 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/codex-update.yml'
+      - 'scripts/check_codex_update.py'
+      - 'scripts/check_protocol.py'
+      - 'docs/protocol-baseline.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codex-upstream-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      update: ${{ steps.candidate.outputs.update }}
+      version: ${{ steps.candidate.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+      - run: uv sync --locked
+      - run: uv run ruff check src tests scripts
+      - run: uv run ruff format --check src tests scripts
+      - run: uv run pytest -q
+      - run: uv build
+      - name: Download candidate, verify protocol and initialize app-server
+        id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRISM_FORCE_CHECK: ${{ github.event_name != 'schedule' }}
+        run: |
+          extra=()
+          if [ "$PRISM_FORCE_CHECK" = true ]; then extra+=(--force); fi
+          uv run python scripts/check_codex_update.py --work-dir "$RUNNER_TEMP/codex-check" --github-output "$GITHUB_OUTPUT" "${extra[@]}"
+      - name: Save diagnostic reports even if the check fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codex-check-report
+          path: ${{ runner.temp }}/codex-check/*.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+  propose:
+    needs: check
+    if: needs.check.outputs.update == 'true' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # The candidate engine never runs in this job, which holds write permissions.
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: codex-check-report
+          path: candidate-report
+      - run: cp candidate-report/candidate.json docs/codex-candidate.json
+      - uses: peter-evans/create-pull-request@v7
+        id: pr
+        with:
+          branch: automation/codex-update
+          base: ${{ github.event.repository.default_branch }}
+          add-paths: docs/codex-candidate.json
+          commit-message: 'Record Codex ${{ needs.check.outputs.version }} candidate checks'
+          title: 'Codex ${{ needs.check.outputs.version }}: protocol and handshake checked'
+          body: |
+            A new stable Codex package passed the offline Prism suite, build,
+            consumed-protocol structural checks and stdio initialization.
+
+            Review the version, package SHA-256 and scope in `docs/codex-candidate.json`.
+            The reviewed protocol baseline and working executable are unchanged.
+            No model credentials or model calls were used. This report does not
+            establish full behavioral compatibility or raw-reasoning availability.
+
+            Before switching your working engine, follow `docs/UPDATING.md`:
+            retain the old package and check commands/output, approvals, interrupt
+            and resume with the candidate. Merge records the automated checks only.
+
+            Validation ran before this PR was created:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            GitHub may suppress additional PR-triggered workflows for GITHUB_TOKEN.
+          delete-branch: true
+      - name: Explain repository setting on PR creation failure
+        if: failure() && steps.pr.outcome == 'failure'
+        run: |
+          echo 'Enable Settings → Actions → General → Workflow permissions → Allow GitHub Actions to create and approve pull requests.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Also inspect the failing step for organization policy or branch restrictions. See docs/UPDATING.md.' >> "$GITHUB_STEP_SUMMARY"

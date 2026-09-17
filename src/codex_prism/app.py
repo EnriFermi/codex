@@ -14,6 +14,7 @@ from textual.theme import Theme
 from textual.widgets import Button, Footer, Input, OptionList, Static
 from textual.widgets.option_list import Option
 
+from .commands import command_help, suggestions
 from .config import Settings, state_path
 from .model import Entry, Trace, pretty
 from .storage import Journal, export_markdown, private_write
@@ -25,7 +26,8 @@ HELP = """Codex Prism · keyboard guide
 Esc             Leave the composer / search; navigate the trace
 j / k           Next / previous visible event
 i               Focus the multiline composer
-Ctrl+Enter      Send prompt (Alt+Enter also works)
+Enter           Send prompt (Ctrl+Enter / Alt+Enter also work)
+Shift+Enter     New line (Ctrl+N works in legacy terminals)
 /               Search full commands, reasoning, and output
 o               Expand / collapse selected output
 O               Expand / collapse all outputs
@@ -41,6 +43,8 @@ Ctrl+Q          Exit (interrupts an active turn)
 F1              This guide
 
 Composer commands:
+Type / for descriptions; ↑/↓ selects, Tab/Enter completes, Esc closes.
+Press Enter again to execute the completed command.
 /new            Start a new conversation
 /resume UUID    Resume a Codex thread
 /sessions       List recent Codex threads
@@ -194,17 +198,27 @@ class Prism(App):
                 )
                 with VerticalScroll(id="timeline", can_focus=True):
                     yield Static(
-                        "◈  A clearer view of Codex\n\nCommands, reasoning, and results each have their own place.\nStart a conversation below. Press F1 for shortcuts.\n\nCtrl+Enter sends · Esc enters navigation",
+                        "◈  A clearer view of Codex\n\nCommands, reasoning, and results each have their own place.\nStart a conversation below. Press F1 for shortcuts.\n\nEnter sends · / opens command suggestions",
                         id="empty",
                         markup=False,
                     )
                 with Vertical(id="composer-shell"):
-                    yield Static("›  MESSAGE  ·  Ctrl+Enter to send", id="composer-label")
-                    yield Prompt(id="composer", soft_wrap=True, show_line_numbers=False)
+                    yield Static("›  MESSAGE", id="composer-label")
+                    menu = OptionList(id="command-menu", wrap=True)
+                    menu.can_focus = False
+                    yield menu
+                    yield Static(command_help(""), id="composer-help", markup=False)
+                    with Horizontal(id="composer-row"):
+                        yield Prompt(id="composer", soft_wrap=True, show_line_numbers=False)
+                        yield Button("Send", id="send-prompt", variant="primary")
         yield Static("", id="hint", markup=False)
         yield Footer()
 
     async def on_mount(self):
+        self.main_screen.query_one("#command-menu").display = False
+        self.main_screen.query_one("#command-menu").styles.max_height = min(
+            9, max(3, self.size.height - 25)
+        )
         self.main_screen.query_one("#search").display = False
         self.main_screen.query_one("#sidebar").display = self.settings.show_sidebar
         for entry in self.trace.entries.values():
@@ -472,6 +486,54 @@ class Prism(App):
     def prompt_submitted(self, event: Prompt.Submitted):
         self.send_prompt(event.text)
 
+    @on(Button.Pressed, "#send-prompt")
+    def send_pressed(self):
+        self.main_screen.query_one("#composer", Prompt).action_submit()
+
+    @on(Prompt.Changed, "#composer")
+    def update_command_menu(self):
+        prompt = self.main_screen.query_one("#composer", Prompt)
+        menu = self.main_screen.query_one("#command-menu", OptionList)
+        matches = suggestions(prompt.text)
+        menu.clear_options()
+        menu.add_options(
+            Option(Text.assemble((f"{c.usage:<17}", "bold"), c.description), id=c.text)
+            for c in matches
+        )
+        menu.display = prompt.completion_open = bool(matches)
+        if matches:
+            menu.highlighted = 0
+        self.main_screen.query_one("#composer-help", Static).update(
+            "↑/↓ choose · Tab / Enter complete · Esc close"
+            if matches
+            else command_help(prompt.text)
+        )
+
+    def complete_command(self, text: str):
+        prompt = self.main_screen.query_one("#composer", Prompt)
+        prompt.load_text(text)
+        prompt.move_cursor((0, len(text)))
+        prompt.focus()
+
+    @on(Prompt.Completion)
+    def command_key(self, event: Prompt.Completion):
+        menu = self.main_screen.query_one("#command-menu", OptionList)
+        if event.action == "escape":
+            menu.display = False
+            prompt = self.main_screen.query_one("#composer", Prompt)
+            prompt.completion_open = False
+            self.main_screen.query_one("#composer-help", Static).update(command_help(prompt.text))
+        elif event.action in {"up", "down"}:
+            step = -1 if event.action == "up" else 1
+            menu.highlighted = ((menu.highlighted or 0) + step) % menu.option_count
+        elif menu.highlighted is not None:
+            self.complete_command(menu.get_option_at_index(menu.highlighted).id)
+
+    @on(OptionList.OptionSelected, "#command-menu")
+    def command_selected(self, event: OptionList.OptionSelected):
+        event.stop()
+        self.complete_command(event.option.id)
+
     @work(group="send")
     async def send_prompt(self, text: str):
         if self.sending:
@@ -587,6 +649,9 @@ class Prism(App):
 
     def on_resize(self, event):
         if self.is_mounted and self.screen_stack and self.main_screen.query("#sidebar"):
+            self.main_screen.query_one("#command-menu").styles.max_height = min(
+                9, max(3, event.size.height - 25)
+            )
             self.main_screen.query_one("#sidebar").display = (
                 self.settings.show_sidebar and event.size.width >= 96
             )

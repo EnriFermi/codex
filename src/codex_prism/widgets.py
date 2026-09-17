@@ -5,6 +5,7 @@ import math
 from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.message import Message
 from textual.screen import ModalScreen
@@ -250,7 +251,18 @@ class TraceCard(Vertical):
 
 
 class Prompt(TextArea):
-    BINDINGS = [("ctrl+enter", "submit", "Send"), ("alt+enter", "submit", "Send")]
+    BINDINGS = [
+        Binding("enter", "submit", "Send"),
+        Binding("ctrl+enter", "submit", "Send", show=False),
+        Binding("alt+enter", "submit", "Send", show=False),
+        Binding("ctrl+j", "submit", "Send", show=False),  # Ctrl+Enter may arrive as LF.
+    ]
+    completion_open = False
+
+    class Completion(Message):
+        def __init__(self, action: str):
+            super().__init__()
+            self.action = action
 
     class Submitted(Message):
         def __init__(self, text: str):
@@ -260,6 +272,22 @@ class Prompt(TextArea):
     def action_submit(self):
         if self.text.strip():
             self.post_message(self.Submitted(self.text))
+
+    async def _on_key(self, event):
+        # TextArea consumes Enter before ordinary bindings. Handle it here;
+        # terminals which encode Ctrl+Enter as Enter can now send too.
+        if self.completion_open and event.key in {"up", "down", "tab", "enter", "escape"}:
+            event.stop()
+            event.prevent_default()
+            self.post_message(self.Completion(event.key))
+        elif event.key in {"enter", "shift+enter", "ctrl+n"}:
+            event.stop()
+            event.prevent_default()
+            if event.key == "enter":
+                self.action_submit()
+            else:
+                self._replace_via_keyboard("\n", *self.selection)
+        # The inherited handler handles typing and bracketed paste as usual.
 
 
 class DetailScreen(ModalScreen):

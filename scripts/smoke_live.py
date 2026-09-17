@@ -4,6 +4,7 @@ Usage: uv run python scripts/smoke_live.py
 Consumes one small model turn. Executes a harmless printf in this repository.
 """
 
+import argparse
 import asyncio
 import json
 from collections import Counter
@@ -14,7 +15,7 @@ from codex_prism.storage import Journal
 from codex_prism.transport import AppServer
 
 
-async def main():
+async def main(binary):
     trace = Trace()
     methods = Counter()
     done = asyncio.Event()
@@ -30,7 +31,7 @@ async def main():
         if message.get("method") == "turn/completed":
             done.set()
 
-    server = AppServer(on_message=incoming)
+    server = AppServer(binary=binary, on_message=incoming)
     try:
         await server.start()
         result = await server.request(
@@ -87,4 +88,7 @@ async def main():
         journal.close()
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--codex", default="codex", help="Candidate executable path")
+    asyncio.run(main(parser.parse_args().codex))

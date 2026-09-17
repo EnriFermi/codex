@@ -1,9 +1,11 @@
-from textual.widgets import Input
+import pytest
+from textual.events import Paste
+from textual.widgets import Input, OptionList
 
 from codex_prism.app import Prism
 from codex_prism.config import Settings
 from codex_prism.demo import demo_trace
-from codex_prism.widgets import PagedText
+from codex_prism.widgets import PagedText, Prompt
 
 
 async def test_demo_navigation_search_fold_and_theme(tmp_path):
@@ -84,7 +86,8 @@ async def test_config_reload_removes_old_keybinding(tmp_path):
         assert app.selected_id == "demo-search"
 
 
-async def test_live_client_prompt_to_full_command_to_completion(tmp_path):
+@pytest.mark.parametrize("send", ["enter", "ctrl+enter", "ctrl+j", "alt+enter", "button"])
+async def test_live_client_prompt_to_full_command_to_completion(tmp_path, send):
     import asyncio
     from pathlib import Path
 
@@ -100,7 +103,10 @@ async def test_live_client_prompt_to_full_command_to_completion(tmp_path):
             while not app.ready:
                 await pilot.pause(0.05)
         app.query_one("#composer", Prompt).load_text("Run the smoke check")
-        await pilot.press("ctrl+enter")
+        if send == "button":
+            await pilot.click("#send-prompt")
+        else:
+            await pilot.press(send)
         async with asyncio.timeout(5):
             while app.trace.status != "completed":
                 await pilot.pause(0.05)
@@ -112,6 +118,70 @@ async def test_live_client_prompt_to_full_command_to_completion(tmp_path):
         assert app.trace.turn_id == ""
         assert app.cards["c"].entry.exit_code == 0
     assert app.server.process.returncode is not None
+
+
+async def test_multiline_and_paste_never_submit():
+    app = Prism(Settings(record=False), offline=True)
+    sent = []
+    app.send_prompt = sent.append
+    async with app.run_test(size=(80, 24)) as pilot:
+        await pilot.press("i", "a", "shift+enter", "b", "ctrl+n", "c")
+        prompt = app.query_one("#composer", Prompt)
+        assert prompt.text == "a\nb\nc"
+        app.post_message(Paste("\npasted\ntext\n"))
+        await pilot.pause()
+        assert prompt.text == "a\nb\nc\npasted\ntext\n"
+        assert sent == []
+        await pilot.press("enter")
+        assert sent == [prompt.text]
+
+
+async def test_slash_menu_filter_navigation_completion_and_escape():
+    app = Prism(Settings(record=False), offline=True)
+    sent = []
+    app.send_prompt = sent.append
+    async with app.run_test(size=(80, 24)) as pilot:
+        await pilot.press("i", "slash")
+        menu = app.query_one("#command-menu", OptionList)
+        prompt = app.query_one("#composer", Prompt)
+        assert menu.display and menu.option_count == 7
+        assert app.query_one("#timeline").size.height > 0
+        await pilot.press("down", "tab")
+        assert prompt.text == "/resume "
+        assert prompt.has_focus and not menu.display
+        assert sent == []
+        prompt.load_text("/th")
+        await pilot.pause()
+        assert menu.option_count == 1
+        await pilot.press("enter")
+        assert prompt.text == "/theme "
+        assert menu.option_count == 3
+        await pilot.press("down", "enter")
+        assert prompt.text == "/theme ember"
+        assert not menu.display and sent == []
+        await pilot.press("enter")
+        assert sent == ["/theme ember"]
+        prompt.load_text("/")
+        await pilot.pause()
+        await pilot.press("escape")
+        assert not menu.display and prompt.has_focus
+        await pilot.press("escape")
+        assert not prompt.has_focus
+
+
+async def test_slash_menu_mouse_selection_and_unknown_command_preserve_draft():
+    app = Prism(Settings(record=False), offline=True)
+    async with app.run_test(size=(100, 35)) as pilot:
+        await pilot.press("i", "slash", "h")
+        await pilot.click("#command-menu", offset=(3, 1))
+        prompt = app.query_one("#composer", Prompt)
+        assert prompt.text == "/help" and prompt.has_focus
+        prompt.load_text("/unknown important draft")
+        await pilot.pause()
+        assert not app.query_one("#command-menu").display
+        await pilot.press("enter")
+        await pilot.pause()
+        assert prompt.text == "/unknown important draft"
 
 
 async def test_quit_closes_message_pump_cleanly():
