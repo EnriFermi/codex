@@ -314,7 +314,7 @@ impl ReasoningSummaryCell {
         }
     }
 
-    fn lines(&self, width: u16) -> Vec<Line<'static>> {
+    fn lines(&self, width: u16, prism: &crate::prism::Settings) -> Vec<Line<'static>> {
         let mut lines: Vec<Line<'static>> = Vec::new();
         append_markdown(
             &self.content,
@@ -322,7 +322,12 @@ impl ReasoningSummaryCell {
             Some(self.cwd.as_path()),
             &mut lines,
         );
-        let summary_style = Style::default().dim().italic();
+        let summary_style = if prism.enabled {
+            lines.insert(0, Line::from("◇ REASONING".bold()));
+            crate::prism::color_style(&prism.reasoning_color)
+        } else {
+            Style::default().dim().italic()
+        };
         let summary_lines = lines
             .into_iter()
             .map(|mut line| {
@@ -346,15 +351,16 @@ impl ReasoningSummaryCell {
 
 impl HistoryCell for ReasoningSummaryCell {
     fn display_lines(&self, width: u16) -> Vec<Line<'static>> {
-        if self.transcript_only {
+        let prism = crate::prism::settings();
+        if self.transcript_only && !(prism.enabled && prism.reasoning_in_chat) {
             Vec::new()
         } else {
-            self.lines(width)
+            self.lines(width, prism)
         }
     }
 
     fn transcript_lines(&self, width: u16) -> Vec<Line<'static>> {
-        self.lines(width)
+        self.lines(width, crate::prism::settings())
     }
 
     fn raw_lines(&self) -> Vec<Line<'static>> {

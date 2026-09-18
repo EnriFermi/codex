@@ -185,6 +185,10 @@ fn activity_marker(start_time: Option<Instant>, animations_enabled: bool) -> Spa
 
 impl HistoryCell for ExecCell {
     fn display_lines(&self, width: u16) -> Vec<Line<'static>> {
+        let prism = crate::prism::settings();
+        if prism.enabled && prism.full_commands {
+            return super::prism::display_lines(self, width, prism);
+        }
         if self.is_exploring_cell() {
             self.exploring_display_lines(width)
         } else {

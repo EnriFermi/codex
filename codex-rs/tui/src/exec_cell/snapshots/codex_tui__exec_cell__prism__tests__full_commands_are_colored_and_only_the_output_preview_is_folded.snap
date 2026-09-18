@@ -1,0 +1,13 @@
+---
+source: tui/src/exec_cell/prism_tests.rs
+assertion_line: 48
+expression: text
+---
+$ COMMAND · exit 0
+  bash -lc 'cat -- ./some-long-input-file.txt'
+  OUTPUT · Ctrl+T to expand
+  │ output line 0
+  │ output line 1
+  │ … +8 lines (ctrl + t to view transcript)
+  │ output line 10
+  │ output line 11

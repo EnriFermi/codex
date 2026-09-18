@@ -4,6 +4,34 @@ use assert_matches::assert_matches;
 use pretty_assertions::assert_eq;
 
 #[test]
+fn prism_reasoning_keeps_complete_content_with_a_distinct_style() {
+    let content = "First inspect the configuration.\n\nThen compare **both** command paths.";
+    let cell = ReasoningSummaryCell::new(
+        "Reasoning".into(),
+        content.into(),
+        Path::new("/tmp"),
+        /*transcript_only*/ false,
+    );
+    let settings = crate::prism::Settings {
+        enabled: true,
+        ..Default::default()
+    };
+    let lines = cell.lines(/*width*/ 72, &settings);
+    insta::assert_snapshot!(
+        lines
+            .iter()
+            .map(ToString::to_string)
+            .collect::<Vec<_>>()
+            .join("\n")
+    );
+    assert!(lines.iter().flat_map(|line| &line.spans).any(|span| {
+        span.content.contains("configuration") && span.style.fg == Some(Color::Magenta)
+    }));
+    assert_eq!(cell.content, content);
+    assert_eq!(cell.raw_lines(), raw_lines_from_source(content));
+}
+
+#[test]
 fn sanitizer_borrows_clean_text_and_removes_control_sequences() {
     for (text, expected) in [
         ("clean\ttext\n", "clean\ttext\n"),

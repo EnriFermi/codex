@@ -1,5 +1,6 @@
 mod live_output;
 mod model;
+mod prism;
 mod render;
 
 pub(crate) use model::CommandOutput;

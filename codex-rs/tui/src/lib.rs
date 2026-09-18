@@ -210,6 +210,7 @@ pub(crate) mod update_action;
 pub use update_action::UpdateAction;
 #[cfg(not(debug_assertions))]
 pub use update_action::get_update_action;
+mod prism;
 mod update_prompt;
 #[cfg(any(not(debug_assertions), test))]
 mod update_versions;
@@ -1243,6 +1244,7 @@ async fn run_ratatui_app(
         initial_config
     };
     startup_draft.apply_config(&config);
+
     if !(cli.resume_picker || cli.fork_picker || cli.agents_overview)
         && let Err(err) = startup_draft.show(&mut tui)
     {
@@ -1568,6 +1570,10 @@ async fn run_ratatui_app(
         }
     };
     startup_draft.apply_config(&config);
+
+    if let Some(warning) = crate::prism::startup_warning() {
+        config.startup_warnings.push(warning);
+    }
 
     // Configure syntax highlighting theme from the final config — onboarding
     // and resume/fork can both reload config with a different tui_theme, so
