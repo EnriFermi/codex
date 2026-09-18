@@ -152,6 +152,14 @@ for line in sys.stdin:
                 "params": {"turn": {"id": "test-turn", "status": "completed"}},
             }
         )
+    elif method == "turn/interrupt":
+        send({"id": m["id"], "result": {}})
+        send(
+            {
+                "method": "turn/completed",
+                "params": {"turn": {"id": m["params"]["turnId"], "status": "interrupted"}},
+            }
+        )
     elif method == "test/big":
         send(
             {

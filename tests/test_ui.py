@@ -144,7 +144,7 @@ async def test_slash_menu_filter_navigation_completion_and_escape():
         await pilot.press("i", "slash")
         menu = app.query_one("#command-menu", OptionList)
         prompt = app.query_one("#composer", Prompt)
-        assert menu.display and menu.option_count == 7
+        assert menu.display and menu.option_count == 9
         assert app.query_one("#timeline").size.height > 0
         await pilot.press("down", "tab")
         assert prompt.text == "/resume "

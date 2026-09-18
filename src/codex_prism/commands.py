@@ -18,6 +18,8 @@ COMMANDS = (
     Command("/export ", "/export [PATH]", "Save the full trace as Markdown; path is optional"),
     Command("/stop", "/stop", "Interrupt the current turn"),
     Command("/help", "/help", "Show keyboard shortcuts and command help"),
+    Command("/quit", "/quit", "Exit Prism (interrupts an active turn)"),
+    Command("/exit", "/exit", "Exit Prism (same as /quit)"),
 )
 THEMES = (
     Command("/theme prism", "/theme prism", "Cool dark palette"),

@@ -2,6 +2,8 @@ Screen { background: $background; color: $foreground; }
 #topbar { height: 3; padding: 1 2 0 2; background: $surface; }
 #brand { width: 24; color: $accent; text-style: bold; }
 #session-status { width: 1fr; text-align: right; color: $text-muted; }
+#quit-app { width: 8; min-width: 8; height: 1; min-height: 1; border: none; padding: 0; margin-left: 1; background: $panel; color: $accent; }
+#quit-app:hover { background: $accent; color: $background; }
 #workspace { height: 1; padding: 0 2; color: $text-muted; background: $surface; }
 #main { height: 1fr; }
 #sidebar { width: 29; min-width: 20; padding: 1 0; border-right: solid $panel; }

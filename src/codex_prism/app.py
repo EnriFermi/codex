@@ -47,8 +47,7 @@ Ctrl+Q          Exit (interrupts an active turn)
 F1              This guide
 
 Composer commands:
-Type / for descriptions; ↑/↓ selects, Tab/Enter completes, Esc closes.
-Press Enter again to execute the completed command.
+Type / for descriptions; ↑/↓ selects, Enter runs, Tab completes, Esc closes.
 /new            Start a new conversation
 /resume [ID]    Search and choose a saved conversation (ID is optional)
 /sessions       Open the same conversation chooser
@@ -56,11 +55,13 @@ Press Enter again to execute the completed command.
 /export [PATH]  Save the full transcript (never overwrites)
 /stop           Interrupt the active turn
 /help           This guide
+/quit or /exit  Exit Prism (interrupts an active turn)
 
 Mouse: click an event to select, click OUTPUT to fold, drag text to select it.
 While text is selected, new trace events wait until Esc/click clears selection.
 Clipboard uses terminal OSC 52; Shift+drag uses native terminal selection
-in terminals that support this bypass. Ctrl+Q quits; Ctrl+C never quits.
+in terminals that support this bypass. Ctrl+Q, /quit, /exit or the Quit button
+exit the client. Ctrl+C copies text.
 The output preview is a view only. Copy/export retains all received text.
 Large blocks are paged; Next/Previous navigate without losing data.
 """
@@ -192,6 +193,7 @@ class Prism(App):
         with Horizontal(id="topbar"):
             yield Static("◈  CODEX PRISM", id="brand")
             yield Static("Connecting…", id="session-status", markup=False)
+            yield Button("Quit", id="quit-app", tooltip="Exit Prism · /quit · Ctrl+Q")
         yield Static(self.trace.cwd or self.cwd, id="workspace", markup=False)
         with Horizontal(id="main"):
             with Vertical(id="sidebar"):
@@ -513,6 +515,10 @@ class Prism(App):
     def send_pressed(self):
         self.main_screen.query_one("#composer", Prompt).action_submit()
 
+    @on(Button.Pressed, "#quit-app")
+    def quit_pressed(self):
+        self.action_close_app()
+
     @on(Prompt.Changed, "#composer")
     def update_command_menu(self):
         prompt = self.main_screen.query_one("#composer", Prompt)
@@ -565,17 +571,18 @@ class Prism(App):
 
     @work(group="send")
     async def send_prompt(self, text: str):
+        # Local commands must remain usable while a model RPC is pending.
+        if text.lstrip().startswith("/"):
+            self.run_command(text.strip())
+            return
         if self.sending:
+            self.notify("Previous message is still being sent; your draft is preserved")
             return
         if self.switching:
             self.notify("Wait for the conversation to finish loading")
             return
         self.sending = True
         try:
-            if text.startswith("/"):
-                await self.slash_command(text)
-                self.main_screen.query_one("#composer", Prompt).load_text("")
-                return
             if not self.ready or not self.server or self.offline:
                 self.notify(
                     "Start a live session to send prompts. Offline mode supports /help, /theme and /export.",
@@ -590,18 +597,34 @@ class Prism(App):
                 result = await self.server.request("turn/start", params)
                 self.trace.turn_id = result["turn"]["id"]
                 self.trace.status = "working"
-            self.main_screen.query_one("#composer", Prompt).load_text("")
+            self.clear_submitted_draft(text)
             self.follow = True
         except Exception as exc:
             self.notify(str(exc), title="Codex", severity="error", timeout=10)
         finally:
             self.sending = False
 
+    def clear_submitted_draft(self, text: str):
+        if not self._shutdown_started:
+            prompt = self.main_screen.query_one("#composer", Prompt)
+            if prompt.text.strip() == text.strip():
+                prompt.load_text("")
+
+    @work(group="commands")
+    async def run_command(self, text: str):
+        try:
+            await self.slash_command(text)
+            self.clear_submitted_draft(text)
+        except Exception as exc:
+            self.notify(str(exc), title="Command", severity="error", timeout=10)
+
     async def slash_command(self, text: str):
         command, _, arg = text.strip().partition(" ")
         arg = arg.strip()
         if command == "/help":
             self.action_help()
+        elif command in {"/quit", "/exit"}:
+            self.action_close_app()
         elif command == "/theme":
             if arg not in {"prism", "ember", "daylight"}:
                 raise ValueError("Use /theme prism, ember, or daylight")
@@ -612,6 +635,8 @@ class Prism(App):
         elif command == "/stop":
             await self.interrupt_turn()
         elif command in {"/new", "/resume", "/sessions"}:
+            if self.switching:
+                raise ValueError("A conversation is still loading; your command is preserved")
             if not self.server or not self.ready:
                 raise ValueError("Not connected to Codex")
             if command == "/sessions" or command == "/resume" and not arg:
@@ -619,7 +644,9 @@ class Prism(App):
             else:
                 await self.switch_thread(arg if command == "/resume" else None)
         else:
-            raise ValueError(f"Unknown command: {command}. Use /help")
+            raise ValueError(
+                f"{command} is not implemented in Prism. Type / to see supported commands."
+            )
 
     @work(group="session-picker", exclusive=True)
     async def choose_session(self):
@@ -865,19 +892,23 @@ class Prism(App):
         except Exception as exc:
             self.notify(str(exc), severity="error")
 
-    @work(group="close", exclusive=True)
+    @work(group="close")
     async def action_close_app(self):
-        if not self._shutdown_started:
-            self._shutdown_started = True
+        # Repeated clicks/keys must not cancel the worker which owns cleanup.
+        if self._shutdown_started:
+            return
+        self._shutdown_started = True
+        try:
             try:
                 await asyncio.wait_for(self.interrupt_turn(), 3)
             except Exception:
                 pass
             if self.server:
                 await self.server.close()
+        finally:
             if self.journal:
                 self.journal.close()
-        self.exit()
+            self.exit()
 
     async def on_unmount(self):
         self._shutdown_started = True

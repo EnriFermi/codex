@@ -1,5 +1,11 @@
 # Validation
 
+## Command dispatch and exit — 2026-09-18
+
+**87 offline tests pass on Python 3.12.** Every advertised command (`/new`, `/resume`, `/sessions`, `/theme`, `/export`, `/stop`, `/help`, `/quit`, `/exit`) is exercised through the composer against the fake app-server. Local command dispatch is independent of the pending message request; help, theme and exit also run while disconnected or switching history. Rejected/unsupported commands retain their draft. Repeated exit requests no longer cancel the worker responsible for closing the server.
+
+Separate Linux PTY checks of `/quit`, `/exit`, Ctrl+Q and an external SIGINT all exited with code 0, reaped the fake app-server child and left complete readable gzip journals. The Quit button is covered by UI tests. The user's Ctrl+Q failure was not reproduced in these terminals, so the host-side cause remains unverified; typed commands and the button provide alternatives. Prism still implements a subset of the stock Codex CLI's slash commands.
+
 ## Resume activation and short terminals — 2026-09-18
 
 The previous chooser tests checked loaded rows but missed two user-visible problems: selecting `/resume` completed the draft without opening the chooser, and the 85%-height modal left only two list lines at 135 × 26 (one at 80 × 24). New regression tests failed on both behaviors before the fix.
