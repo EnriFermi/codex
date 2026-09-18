@@ -12,8 +12,8 @@ class Command:
 
 COMMANDS = (
     Command("/new", "/new", "Start a new conversation"),
-    Command("/resume ", "/resume UUID", "Continue a saved conversation by thread ID"),
-    Command("/sessions", "/sessions", "List recent conversations and their IDs"),
+    Command("/resume ", "/resume [ID]", "Search and choose a saved conversation"),
+    Command("/sessions", "/sessions", "Browse saved conversations"),
     Command("/theme ", "/theme NAME", "Change colors: prism, ember, daylight"),
     Command("/export ", "/export [PATH]", "Save the full trace as Markdown; path is optional"),
     Command("/stop", "/stop", "Interrupt the current turn"),

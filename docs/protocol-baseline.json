@@ -179,11 +179,26 @@
     "ThreadListParams": {
       "required": [],
       "fields": {
+        "cursor": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
         "limit": {
           "format": "uint32",
           "minimum": 0.0,
           "type": [
             "integer",
+            "null"
+          ]
+        },
+        "modelProviders": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
             "null"
           ]
         },

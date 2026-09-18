@@ -18,7 +18,7 @@ CONTRACT = {
     "InitializeResponse": {"userAgent"},
     "ThreadStartParams": {"cwd", "model", "sandbox", "approvalPolicy"},
     "ThreadResumeParams": {"threadId"},
-    "ThreadListParams": {"limit", "sortKey"},
+    "ThreadListParams": {"limit", "sortKey", "cursor", "modelProviders"},
     "ThreadTurnsListParams": {"threadId", "itemsView", "sortDirection", "limit", "cursor"},
     "TurnStartParams": {"threadId", "input"},
     "TurnSteerParams": {"threadId", "input", "expectedTurnId"},

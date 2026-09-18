@@ -10,7 +10,7 @@ Screen { background: $background; color: $foreground; }
 #filters Button { min-width: 5; width: 1fr; padding: 0; border: none; height: 2; background: $panel; }
 #filters Button.active { background: $accent; color: $background; }
 #outline { height: 1fr; padding: 0 1; border: none; background: $background; }
-#outline > .option-list--option { padding: 0 1; }
+#outline > .option-list--option { padding: 0 1; text-wrap: nowrap; }
 #outline > .option-list--option-highlighted { background: $panel; }
 #sidebar-note { height: auto; padding: 1 2; color: $text-muted; }
 #content { width: 1fr; }
@@ -24,11 +24,15 @@ Screen { background: $background; color: $foreground; }
 .kind-assistant, .kind-commentary { border-left: thick $assistant; }
 .kind-user { border-left: thick $user; }
 .kind-error { border-left: thick $error; }
-.card-heading { height: auto; margin-bottom: 1; }
+.card-header { height: auto; margin-bottom: 1; }
+.card-heading { height: auto; width: 1fr; }
+.copy-entry { width: 7; min-width: 7; height: 1; min-height: 1; border: none; padding: 0; color: $text-muted; background: transparent; }
+.copy-entry:hover { background: $panel; color: $accent; }
 .card-meta { height: auto; margin-bottom: 1; color: $text-muted; }
 .section-label { height: 1; color: $reasoning; margin-bottom: 1; }
 .paged { height: auto; }
-.page-body { height: auto; overflow-x: auto; }
+.page-scroll { height: auto; overflow-y: hidden; }
+.page-body { height: auto; }
 .message-body, .reasoning-content, .reasoning-summary, .command-body { margin-bottom: 1; }
 .pager { height: 3; margin-top: 1; }
 .pager Button { min-width: 12; height: 3; }
@@ -54,3 +58,9 @@ ModalScreen { align: center middle; background: $background 75%; }
 #dialog VerticalScroll { height: 1fr; }
 .dialog-actions { height: 3; align-horizontal: right; }
 .dialog-actions Button { margin-left: 1; }
+#session-dialog { width: 90%; height: 85%; padding: 1 2; background: $surface; border: round $accent; }
+#session-list { height: 1fr; border: none; background: $surface; }
+#session-list > .option-list--option { padding: 0 1 1 1; }
+#session-count { height: auto; max-height: 3; color: $text-muted; margin: 1 0; }
+#session-preview { height: 3; color: $text-muted; margin: 1 0; }
+#session-dialog .dialog-actions Button { min-width: 8; width: 1fr; }

@@ -20,6 +20,9 @@ AppServer (dedicated subprocess, stdio JSON-RPC)
 | `model.py` | Item/delta reduction, content/summary separation, full commands and received output |
 | `storage.py` | Private append-only recordings, offline replay, Markdown export |
 | `rendering.py` | Safe display of terminal text; Pygments shell/log lexers and themes |
+| `math_rendering.py` | Math delimiters parsed before Markdown escapes; Unicode math, literal fallback for unknown/incomplete TeX |
+| `selectable.py` | Rich renderables materialized as styled text for Textual mouse selection |
+| `sessions.py` | Progressive session listing, preview/title/path search and conversation selection |
 | `widgets.py` | Paged blocks, output folding, request dialogs |
 | `app.py` | Thread/turn lifecycle, steering, resume, navigation, search, keybindings |
 | `config.py` / `app.tcss` | Appearance contract and theme defaults |
@@ -30,6 +33,12 @@ Both reasoning streams are handled as supplied by app-server. Raw content is not
 Command output deltas are accumulated. A shorter final `aggregatedOutput` does not replace a longer stream. The complete final item is also available in the event inspector. The journal preserves the received sequence, including unknown notifications. Tool metadata that has no dedicated renderer stays available through its item JSON or the recording.
 
 Large blocks use rendering pages. Search, copy, and export operate on the complete in-memory entry, not the preview/page. Recordings use compression, not summarization. Long histories currently keep entries and their card widgets in memory; viewport virtualization and disk-backed indexing are future work.
+
+Textual 8 supplies mouse selection. Rich Markdown/Syntax blocks expose their rendered characters through `SelectableText`, so selection includes the text the user sees. Ctrl+C copies the selection; card Copy preserves the full source. While a trace selection exists, UI reduction waits in the event queue; incoming events are still journaled. Esc/click clears the selection and releases queued updates.
+
+Math conversion is display-only. Markdown-It recognizes dollar/bracket math and fenced `math`; regular code is kept literal. `pylatexenc` parses TeX without executing a compiler, and the renderer preserves norm bars, grouping of nested fractions and unsupported scripts. Unknown macros or incomplete expressions fall back to literal TeX. Unicode is a portable text approximation, not complete LaTeX typography.
+
+The session chooser consumes `thread/list` pages with an empty provider filter (all providers) and the default interactive source filter. Search is local across loaded title/preview/path metadata; older pages continue arriving in the background. Selecting a row uses the existing `thread/resume` and paginated history path. A failed history load leaves the current trace intact.
 
 `AppServer` owns only its child process. It does not connect to or restart another running Codex/dispatcher server. On normal exit Prism requests turn interruption and closes this child. Process death fails outstanding RPC requests. Unknown server requests receive a JSON-RPC error instead of waiting forever. Structured command/file/permission approvals are explicit, one-use replies; a cancelled permission request grants no permissions.
 

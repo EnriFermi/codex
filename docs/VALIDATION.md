@@ -1,5 +1,17 @@
 # Validation
 
+## Session chooser, math and text selection — 2026-09-18
+
+**64 offline tests pass on Python 3.11 and 3.12**, with Textual 8.2.8 and pylatexenc 2.11. New coverage includes both `/resume` and `/sessions`, searching a later page by preview, resuming its paginated history, cancellation, retry after a failed list request, empty search results and preserving the current trace after a history error.
+
+Math fixtures cover the Bochner example, four delimiter forms, fenced `math`, norms, nested fraction grouping, super/subscripts, matrices and multiline expressions. Code examples, currency, escaped dollars, unknown commands and incomplete streamed TeX remain literal. Source text is retained independently of display. This is Unicode terminal rendering, not complete graphical LaTeX typesetting.
+
+Mouse drag selects rendered Markdown and Ctrl+C copies it even when focus was in the composer. Tests also cover copying inside the composer, retaining full source through Copy, buffering UI updates while a selection exists, and the horizontally scrollable tail of unwrapped code. Clipboard checks verify the app-side text; acceptance by an actual user's terminal/system clipboard depends on OSC 52 support.
+
+A read-only check against installed **Codex 0.153.3** returned two distinct pages through `thread/list` with `modelProviders: []`, including the title/preview/directory/time metadata used by the chooser. No model turn was started and no real session names were committed. The reviewed protocol baseline now also covers `ThreadListParams.cursor` and `.modelProviders`; its engine version remains 0.153.3.
+
+Synthetic math and session-picker screens were rendered and inspected. The math PNG uses DejaVu Sans Mono to include the mathematical glyphs; the application's actual font is controlled by the user's terminal.
+
 ## Maintenance and input fixes — 2026-09-17
 
 The expanded offline suite passes on Python 3.11 and 3.12. It covers ordinary Enter, Ctrl+Enter, LF/Ctrl+J, Alt+Enter and the Send button through the fake app-server; multiline input and paste; command filtering, keyboard/mouse completion, argument hints, Escape, and an 80 × 24 terminal. A separate Linux PTY check sent actual CR, LF and CSI-u Ctrl+Enter bytes through the real terminal driver: all three completed a fake-server turn and exited cleanly. No model was called in these checks.

@@ -18,11 +18,11 @@ from pygments.token import (
 from pygments.token import (
     Text as TokenText,
 )
-from rich.markdown import Markdown
 from rich.syntax import PygmentsSyntaxTheme, Syntax
 from rich.text import Text
 
 from .config import Settings
+from .math_rendering import MathMarkdown
 
 # OSC (including clipboard), CSI, and other terminal control sequences are data.
 ESCAPES = re.compile(r"\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b\[[0-?]*[ -/]*[@-~]|\x1b[@-_]")
@@ -103,7 +103,11 @@ def code(value: str, language: str, settings: Settings, *, start_line: int = 1) 
 
 def prose(value: str, settings: Settings):
     return (
-        Markdown(display_text(value), code_theme=settings.syntax_theme)
+        MathMarkdown(
+            display_text(value),
+            code_theme=settings.syntax_theme,
+            math_style=settings.palette["reasoning"],
+        )
         if value
         else Text("Waiting for content…", style=settings.palette["muted"])
     )

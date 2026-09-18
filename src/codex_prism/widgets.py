@@ -6,7 +6,7 @@ from rich.text import Text
 from textual import on
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual.containers import Horizontal, HorizontalScroll, Vertical, VerticalScroll
 from textual.message import Message
 from textual.screen import ModalScreen
 from textual.widgets import Button, Input, Static, TextArea
@@ -14,6 +14,7 @@ from textual.widgets import Button, Input, Static, TextArea
 from .config import Settings
 from .model import Entry, pretty
 from .rendering import code, display_text, output_language, prose
+from .selectable import SelectableText
 
 ICONS = {
     "reasoning": "◇",
@@ -58,7 +59,8 @@ class PagedText(Vertical):
         self.page = 0
 
     def compose(self) -> ComposeResult:
-        yield Static(classes="page-body", markup=False)
+        with HorizontalScroll(classes="page-scroll"):
+            yield SelectableText(classes="page-body", markup=False)
         with Horizontal(classes="pager"):
             yield Button("← Previous", classes="page-prev")
             yield Static("", classes="page-label", markup=False)
@@ -79,6 +81,7 @@ class PagedText(Vertical):
         start = self.page * self.settings.page_lines
         chunk = "".join(lines[start : start + self.settings.page_lines])
         body = self.query_one(".page-body", Static)
+        body.styles.width = "auto" if not self.markdown and not self.settings.wrap else "1fr"
         body.update(
             prose(chunk, self.settings)
             if self.markdown
@@ -114,7 +117,9 @@ class TraceCard(Vertical):
         self.shown_revision = -1
 
     def compose(self) -> ComposeResult:
-        yield Static("", classes="card-heading", markup=False)
+        with Horizontal(classes="card-header"):
+            yield Static("", classes="card-heading", markup=False)
+            yield Button("Copy", classes="copy-entry")
         yield Static("", classes="card-meta", markup=False)
         kind = self.entry.kind
         if kind == "command":
@@ -142,7 +147,27 @@ class TraceCard(Vertical):
         self.refresh_entry()
 
     def on_click(self):
-        self.post_message(self.Selected(self.entry.id))
+        if not self.screen.selections:
+            self.post_message(self.Selected(self.entry.id))
+
+    def source_text(self):
+        e = self.entry
+        if e.kind == "reasoning":
+            parts = []
+            if e.content_text:
+                parts.append("REASONING CONTENT\n" + e.content_text)
+            if e.summary_text:
+                parts.append("REASONING SUMMARY\n" + e.summary_text)
+            return "\n\n".join(parts)
+        if e.command:
+            return e.command + ("\n\n" + e.output if e.output else "")
+        return e.text + ("\n\n" + e.output if e.output else "")
+
+    @on(Button.Pressed, ".copy-entry")
+    def copy_entry(self, event: Button.Pressed):
+        event.stop()
+        self.app.copy_to_clipboard(self.source_text())
+        self.app.notify("Full source sent to terminal clipboard · Ctrl+C copies a selection")
 
     def refresh_entry(self):
         e, s = self.entry, self.settings

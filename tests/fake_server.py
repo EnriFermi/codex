@@ -29,6 +29,65 @@ for line in sys.stdin:
             }
         )
         send({"method": "thread/started", "params": {"thread": thread}})
+    elif method == "thread/list":
+        older = bool(m["params"].get("cursor"))
+        send(
+            {
+                "id": m["id"],
+                "result": {
+                    "data": [
+                        {
+                            "id": "saved-math" if older else "saved-ui",
+                            "name": "Bochner integrals" if older else "UI input fixes",
+                            "preview": "Integration in Banach spaces"
+                            if older
+                            else "Keyboard and clipboard",
+                            "cwd": "/math" if older else "/ui",
+                            "updatedAt": 1789600000,
+                        }
+                    ],
+                    "nextCursor": None if older else "older-page",
+                },
+            }
+        )
+    elif method == "thread/resume":
+        send(
+            {
+                "id": m["id"],
+                "result": {
+                    "thread": {
+                        "id": m["params"]["threadId"],
+                        "cwd": "/math",
+                        "historyMode": "paginated",
+                    },
+                    "model": "test-model",
+                    "cwd": "/math",
+                },
+            }
+        )
+    elif method == "thread/turns/list":
+        send(
+            {
+                "id": m["id"],
+                "result": {
+                    "data": [
+                        {
+                            "id": "old-turn",
+                            "status": "completed",
+                            "items": [
+                                {
+                                    "id": "old-answer",
+                                    "type": "agentMessage",
+                                    "text": "Saved Bochner conversation",
+                                    "phase": "final_answer",
+                                }
+                            ],
+                        }
+                    ],
+                    "nextCursor": None,
+                },
+            }
+        )
     elif method == "turn/start":
         send({"id": m["id"], "result": {"turn": {"id": "test-turn", "status": "inProgress"}}})
         send({"method": "turn/started", "params": {"turn": {"id": "test-turn"}}})

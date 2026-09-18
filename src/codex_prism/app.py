@@ -11,12 +11,13 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.theme import Theme
-from textual.widgets import Button, Footer, Input, OptionList, Static
+from textual.widgets import Button, Footer, Input, OptionList, Static, TextArea
 from textual.widgets.option_list import Option
 
 from .commands import command_help, suggestions
 from .config import Settings, state_path
 from .model import Entry, Trace, pretty
+from .sessions import SessionPicker
 from .storage import Journal, export_markdown, private_write
 from .transport import AppServer
 from .widgets import COLORS, ICONS, DetailScreen, Prompt, RequestScreen, TraceCard
@@ -32,6 +33,9 @@ Shift+Enter     New line (Ctrl+N works in legacy terminals)
 o               Expand / collapse selected output
 O               Expand / collapse all outputs
 y / Y           Copy full command / full output via terminal clipboard
+Mouse drag      Select rendered text across chat blocks
+Ctrl+C          Copy selected text (also works in the composer)
+Copy button     Copy the entire card's original Markdown/commands/output
 f               Toggle follow mode (G jumps to the latest event)
 Ctrl+B          Toggle sidebar
 Ctrl+R          Reload appearance config
@@ -46,14 +50,17 @@ Composer commands:
 Type / for descriptions; ↑/↓ selects, Tab/Enter completes, Esc closes.
 Press Enter again to execute the completed command.
 /new            Start a new conversation
-/resume UUID    Resume a Codex thread
-/sessions       List recent Codex threads
+/resume [ID]    Search and choose a saved conversation (ID is optional)
+/sessions       Open the same conversation chooser
 /theme NAME     prism, ember, daylight
 /export [PATH]  Save the full transcript (never overwrites)
 /stop           Interrupt the active turn
 /help           This guide
 
-Mouse: click an event to select, click OUTPUT to fold, scroll normally.
+Mouse: click an event to select, click OUTPUT to fold, drag text to select it.
+While text is selected, new trace events wait until Esc/click clears selection.
+Clipboard uses terminal OSC 52; Shift+drag uses native terminal selection
+in terminals that support this bypass. Ctrl+Q quits; Ctrl+C never quits.
 The output preview is a view only. Copy/export retains all received text.
 Large blocks are paged; Next/Previous navigate without losing data.
 """
@@ -65,6 +72,13 @@ class Prism(App):
     BINDINGS = [
         Binding("escape", "navigate", "Navigate", show=False),
         Binding("ctrl+q", "close_app", "Quit", priority=True),
+        Binding(
+            "ctrl+c,ctrl+shift+c,super+c",
+            "copy_selection",
+            "Copy selection",
+            priority=True,
+            show=False,
+        ),
         Binding("ctrl+x", "interrupt", "Stop", priority=True),
         Binding("ctrl+r", "reload_config", "Reload", show=False),
         Binding("ctrl+t", "cycle_theme", "Theme"),
@@ -187,7 +201,7 @@ class Prism(App):
                     yield Button("◇", id="filter-reasoning")
                     yield Button("$", id="filter-tools")
                     yield Button("◆", id="filter-messages")
-                yield OptionList(id="outline", wrap=False)
+                yield OptionList(id="outline")
                 yield Static(
                     "j / k  navigate\no      fold output\n/      search\ni      write a prompt",
                     id="sidebar-note",
@@ -204,7 +218,7 @@ class Prism(App):
                     )
                 with Vertical(id="composer-shell"):
                     yield Static("›  MESSAGE", id="composer-label")
-                    menu = OptionList(id="command-menu", wrap=True)
+                    menu = OptionList(id="command-menu")
                     menu.can_focus = False
                     yield menu
                     yield Static(command_help(""), id="composer-help", markup=False)
@@ -227,6 +241,7 @@ class Prism(App):
         self.set_interval(0.12, self.flush_events)
         self.set_interval(0.5, self.refresh_status)
         self.approval_loop()
+        self.main_screen.text_selection_started_signal.subscribe(self, self.selection_started)
         if self.offline:
             self.ready = True
             self.main_screen.query_one("#composer-label", Static).update(
@@ -262,11 +277,13 @@ class Prism(App):
 
     async def flush_events(self):
         if (
-            self.flushing
+            self._shutdown_started
+            or self.flushing
             or self.switching
             or not self.pending_events
             or not self.screen_stack
             or not self.main_screen.query("#timeline")
+            or self.main_screen.selections
         ):
             return
         self.flushing = True
@@ -279,6 +296,10 @@ class Prism(App):
             for entry in changed.values():
                 if entry.id not in self.cards:
                     await self.add_card(entry)
+                    # Mount yields to Textual; the screen can unmount while
+                    # a streamed item or resumed history is being attached.
+                    if not self.screen_stack or not self.main_screen.query("#outline"):
+                        return
                     new_entries = True
                 else:
                     self.cards[entry.id].refresh_entry()
@@ -403,7 +424,9 @@ class Prism(App):
         )
         recorder = "recording" if self.journal else "offline" if self.offline else "no recording"
         self.main_screen.query_one("#hint", Static).update(
-            f"{'● FOLLOW' if self.follow else '○ BROWSE'}  ·  {recorder}  ·  {len(self.trace.entries)} events  ·  Esc navigate  / search  o output  i compose"
+            "TEXT SELECTED · Ctrl+C copies · Esc clears selection and resumes updates"
+            if self.main_screen.selections
+            else f"{'● FOLLOW' if self.follow else '○ BROWSE'}  ·  {recorder}  ·  {len(self.trace.entries)} events  ·  Esc navigate  / search  o output  i compose"
         )
 
     @work(exclusive=True, group="connect")
@@ -438,19 +461,6 @@ class Prism(App):
             params["cwd"] = self.cwd
             result = await self.server.request("thread/start", params)
         thread = result["thread"]
-        self.trace.thread_id = thread["id"]
-        self.trace.cwd = result.get("cwd", thread.get("cwd", self.cwd))
-        self.trace.model = result.get("model", "Codex")
-        self.incoming(
-            {
-                "method": "prism/session",
-                "params": {
-                    "thread_id": self.trace.thread_id,
-                    "cwd": self.trace.cwd,
-                    "model": self.trace.model,
-                },
-            }
-        )
         turns = thread.get("turns") or []
         if resume_id and thread.get("historyMode") == "paginated":
             turns = []
@@ -470,6 +480,19 @@ class Prism(App):
                 cursor = page.get("nextCursor")
                 if not cursor:
                     break
+        self.trace.thread_id = thread["id"]
+        self.trace.cwd = result.get("cwd", thread.get("cwd", self.cwd))
+        self.trace.model = result.get("model", "Codex")
+        self.incoming(
+            {
+                "method": "prism/session",
+                "params": {
+                    "thread_id": self.trace.thread_id,
+                    "cwd": self.trace.cwd,
+                    "model": self.trace.model,
+                },
+            }
+        )
         if turns:
             self.incoming({"method": "prism/history", "params": {"turns": turns}})
         self.trace.status = "ready"
@@ -538,6 +561,9 @@ class Prism(App):
     async def send_prompt(self, text: str):
         if self.sending:
             return
+        if self.switching:
+            self.notify("Wait for the conversation to finish loading")
+            return
         self.sending = True
         try:
             if text.startswith("/"):
@@ -582,40 +608,45 @@ class Prism(App):
         elif command in {"/new", "/resume", "/sessions"}:
             if not self.server or not self.ready:
                 raise ValueError("Not connected to Codex")
-            if command == "/sessions":
-                result = await self.server.request(
-                    "thread/list", {"limit": 30, "sortKey": "updated_at"}
-                )
-                listing = "\n\n".join(
-                    f"{t['id']}\n{t.get('name') or t.get('preview', '')}\n{t.get('cwd', '')}"
-                    for t in result.get("data", [])
-                )
-                self.push_screen(
-                    DetailScreen("Recent sessions · /resume UUID", listing, self.settings, "text")
-                )
+            if command == "/sessions" or command == "/resume" and not arg:
+                self.choose_session()
             else:
-                if self.trace.turn_id:
-                    raise ValueError("Stop the active turn with Ctrl+X before switching sessions")
-                if command == "/resume" and not arg:
-                    raise ValueError("Use /resume UUID")
-                await self.flush_events()
-                self.switching = True
-                old_trace = self.trace
-                self.trace = Trace()
-                try:
-                    await self.open_thread(arg if command == "/resume" else None)
-                    for card in self.cards.values():
-                        await card.remove()
-                    self.cards.clear()
-                    self.selected_id = None
-                    self.rebuild_outline()
-                except Exception:
-                    self.trace = old_trace
-                    raise
-                finally:
-                    self.switching = False
+                await self.switch_thread(arg if command == "/resume" else None)
         else:
             raise ValueError(f"Unknown command: {command}. Use /help")
+
+    @work(group="session-picker", exclusive=True)
+    async def choose_session(self):
+        try:
+            selected = await self.push_screen_wait(
+                SessionPicker(self.server, self.trace.cwd or self.cwd, self.trace.thread_id)
+            )
+            if selected:
+                await self.switch_thread(selected)
+                self.action_focus_input()
+        except Exception as exc:
+            self.notify(str(exc), title="Resume", severity="error", timeout=10)
+
+    async def switch_thread(self, resume_id: str | None):
+        self.main_screen.clear_selection()
+        await self.flush_events()
+        if self.trace.turn_id:
+            raise ValueError("Stop the active turn with Ctrl+X before switching sessions")
+        self.switching = True
+        old_trace = self.trace
+        self.trace = Trace()
+        try:
+            await self.open_thread(resume_id)
+            for card in self.cards.values():
+                await card.remove()
+            self.cards.clear()
+            self.selected_id = None
+            self.rebuild_outline()
+        except Exception:
+            self.trace = old_trace
+            raise
+        finally:
+            self.switching = False
 
     @work(group="approvals")
     async def approval_loop(self):
@@ -665,6 +696,7 @@ class Prism(App):
             self.follow = False
 
     def action_navigate(self):
+        self.main_screen.clear_selection()
         self.main_screen.query_one("#timeline").focus()
         self.follow = False
 
@@ -710,18 +742,33 @@ class Prism(App):
             )
             self.notify("Copied full text (terminal clipboard / OSC 52)")
 
+    def selection_started(self, _screen):
+        self.follow = False
+
+    def action_copy_selection(self):
+        text = self.screen.get_selected_text()
+        if not text and isinstance(self.focused, (Input, TextArea)):
+            text = self.focused.selected_text
+        if text:
+            self.copy_to_clipboard(text)
+            self.notify("Selection sent to terminal clipboard")
+        else:
+            self.notify("Drag across text to select it, or use the card's Copy button")
+
     def action_copy_output(self):
         if card := self.cards.get(self.selected_id):
             self.copy_to_clipboard(card.entry.output)
             self.notify("Copied full received output (terminal clipboard / OSC 52)")
 
     def action_follow(self):
+        self.main_screen.clear_selection()
         self.follow = not self.follow
         if self.follow:
             self.main_screen.query_one("#timeline", VerticalScroll).scroll_end(animate=False)
         self.refresh_status()
 
     def action_latest(self):
+        self.main_screen.clear_selection()
         self.follow = True
         self.main_screen.query_one("#timeline", VerticalScroll).scroll_end(animate=False)
 
@@ -827,6 +874,7 @@ class Prism(App):
         self.exit()
 
     async def on_unmount(self):
+        self._shutdown_started = True
         if self.server:
             await self.server.close()
         if self.journal:
