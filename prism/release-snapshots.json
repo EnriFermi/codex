@@ -1,0 +1,152 @@
+{
+  "codex-rs/tui/src/chatwidget/rendering_tests.rs": {
+    "fork_sha256": "cc221da972dee55f43320d2cfd6d65701a59affc8b7b10c05e329db8984de239",
+    "reason": "Inline release snapshot padding for version 0.153.3",
+    "upstream_sha256": "3578d34d4b380dcf400bc35396bfb2f5a31d32a28b9eaee26ff0a7d394d6ceb7"
+  },
+  "codex-rs/tui/src/history_cell/snapshots/codex_tui__history_cell__tests__pnpm_update_available_history_cell_snapshot.snap": {
+    "fork_sha256": "cfea472076e61315949f07d2f200194be3ebae3c5ec4a40e9db2d9aff4400a0c",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "c071d79950de8f03fc935accbb9e8ec5630426ec690248f35c210746a2235ff7"
+  },
+  "codex-rs/tui/src/history_cell/snapshots/codex_tui__history_cell__tests__session_info_availability_nux_tooltip_snapshot.snap": {
+    "fork_sha256": "951e217ba0d9b8bcf33a2e8bfa901167bd63f58f8899129ee0b8d47f9d650963",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "ff27952438f1e130d0f7fdefdb8ef87aed6c08a3ac0349abf535d39ba2452162"
+  },
+  "codex-rs/tui/src/history_cell/snapshots/codex_tui__history_cell__tests__standalone_unix_update_available_history_cell_snapshot.snap": {
+    "fork_sha256": "864fc6f059febaa8b364bef671cc03efb55c02467a027f9966c5135a74da1fb3",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "4a8db34e7a197886a2b7735ff978e3f2377af23241f696fc4820e882edc37704"
+  },
+  "codex-rs/tui/src/history_cell/snapshots/codex_tui__history_cell__tests__standalone_windows_update_available_history_cell_snapshot.snap": {
+    "fork_sha256": "32ce873deda34a98399219cb6e5c8cc41a03199e07053ec075238ab48018a369",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "531542422c03c6d9986102fe3265c29a1bdc788d1f4b006521c0e84a2e727d2f"
+  },
+  "codex-rs/tui/src/history_cell/snapshots/codex_tui__history_cell__tests__vite_plus_update_available_history_cell_snapshot.snap": {
+    "fork_sha256": "624e022c7c6377346aea0b323fbda4c685e2cb3286b8ac2ed96bb4716eae7d56",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "f908c9ee2b45eb6bc14a3117088ba2743f0c8f79a5c457a13630d5d95184a9ef"
+  },
+  "codex-rs/tui/src/snapshots/codex_tui__startup_draft__tests__startup_draft_fresh_session_transitions.snap": {
+    "fork_sha256": "f0370896e8c2718a21b1ad23cccc27cbf2ddbb48e0ab49cf3470ae2d8b775222",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "fbd23d34e1cc9e19e658549efdfd74bdea140833b9abaf16cc4a9a9190572673"
+  },
+  "codex-rs/tui/src/snapshots/codex_tui__startup_draft__tests__startup_draft_full_frames.snap": {
+    "fork_sha256": "1a51ab1b8d8fe0d9891db1c1222001fa78ed23e255df3ade0e8d313164985878",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "dc489a7b3eae4841555c6051f5bb005a6726a204330dd5319fa0faf321bf951b"
+  },
+  "codex-rs/tui/src/snapshots/codex_tui__startup_draft__tests__startup_draft_onboarding_transition.snap": {
+    "fork_sha256": "bf6b3d82c41e7eca63f370a604b8a5a3e6670d3feddc11f775c3e4f3ba3e5ed1",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "82ed0c1b1bb3a67a381d55bf0172f494a8f4dd3473588b191ce0cdcd6c31d482"
+  },
+  "codex-rs/tui/src/snapshots/codex_tui__update_prompt__tests__update_prompt_modal.snap": {
+    "fork_sha256": "cf7e2d1e5d1f536ad03d92a242b89527837bc9baa380e5b02a9b51b228d52227",
+    "reason": "Release version 0.153.3 and stable update command",
+    "upstream_sha256": "cbbc848c15c733bdc7031ed61b243cdd4fce4599d0c88778558acd4ec1379ba6"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_cached_limits_hide_credits_without_flag.snap": {
+    "fork_sha256": "38516886f8075e0b6a6f618232d629cfb339021f51a2e40a93ef0e6acf7f8c49",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "6a8645ef7df158f9dc5042d7762f50900acabdf03cd797e84ed554cedb3a0d20"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_includes_credits_and_limits.snap": {
+    "fork_sha256": "055544ec40a541900b0ca778c200e7b01c74585d42860ed8d5b223a38652b284",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "14e550d62ce10d484bdf7932674d8eef5000a02130843dc3f93f1bed2b80f3c8"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_includes_enterprise_monthly_credit_limit.snap": {
+    "fork_sha256": "afc6f0bea0ff5489b91c7da5e8f4143302515c0d2a9679468f7bfedba20e397b",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "fdbf58edc9b34da01dab409359dd3b8fda11f858f7217494f7556144ab7b706a"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_includes_forked_from.snap": {
+    "fork_sha256": "83b316c63f3e79e409a69847c4a9fdb7119aa4284b4194c988ac6f04a3a69118",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "1e4a793517d07e20a7239fcc4cbbcc4f913adbdf4f9a56f610175e9a2eb782ae"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_includes_monthly_limit.snap": {
+    "fork_sha256": "f0276adf956a922ae09f4e6450f9185c2121f1c6d6c6cd9c0f08c8dfeff08664",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "70a32386ced9dc77edf83a692386bead018b7d45f9fc253b2740593cbfa297c3"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_includes_reasoning_details.snap": {
+    "fork_sha256": "3e08b5daf39d1fa822cbff495733043abe5b4baa0737700965da8c46798f6510",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "739ad7f273d984aa22b5c77008da4e246522d40a850b5416e93419dab21d4d47"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_shows_active_user_defined_profile.snap": {
+    "fork_sha256": "8654d6e85240e6ada3f1e20e9bd55705a121cae677f08214a1618b641727685a",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "224df4a6f2f887989bbba782b0b190367d820063ff7ffa4ebd712317c6729219"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_shows_auto_review_permissions.snap": {
+    "fork_sha256": "9eeab6974ef028549ff05febe361249146853a53813dc348aa717af7f0200f55",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "a7d85a8770e601660e7c4b7f2d6b6ed67022c7846b51494b23db343dbe972f14"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_shows_chatgpt_plan_without_email.snap": {
+    "fork_sha256": "cebc7d342ae226eae062cbbd1e296ea6763f4f33dfcf392be80ae159de4a2f6f",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "ff1b0e2a399f3f91af2dd9a617998297e4e433afdffd20066145a7e75eafb7e7"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_shows_missing_limits_message.snap": {
+    "fork_sha256": "964bc4a998002c37156cd67e524b63015e4ca289904de6714ecec85a52f4542e",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "9a1ca345463c52a58494503c19c93a2209110bcc18260121247bb803309b4223"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_shows_refreshing_limits_notice.snap": {
+    "fork_sha256": "8bd2e15d82d59ffa6496c6328b31342a3b10524ea62b4a70e76b3eef2dc37a44",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "4905871ea5b5769fc9b501c3fb41f8ea645d4dc043f31575d08fa5ce7797bbc4"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_shows_stale_limits_message.snap": {
+    "fork_sha256": "47116d7f59b2a460a84cb219794bc4d713362001bd3fbd270cbdf8fe92241ad9",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "01d59a08a670dcffe0b303c4357389538b72a74377da303cd63c017bfc4023ce"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_shows_unavailable_limits_message.snap": {
+    "fork_sha256": "30ac0ffc82f9ba066bea6f985a21d94442e9103af472e057137c91d393b5c2c8",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "de88fd516a19058f3c6080d198e94ea5945f374fd2d1cb77955f128f56118b7b"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_treats_refreshing_empty_limits_as_unavailable.snap": {
+    "fork_sha256": "30ac0ffc82f9ba066bea6f985a21d94442e9103af472e057137c91d393b5c2c8",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "de88fd516a19058f3c6080d198e94ea5945f374fd2d1cb77955f128f56118b7b"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_truncates_halfwidth_kana_in_narrow_terminal.snap": {
+    "fork_sha256": "ea6a311201cffc7c7a4532e616f87b1162d502aa40722438c5978a499a3a7e05",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "5068a610370abfb1a93ae1b0ae3ea54c4c287a62614a51b47040be43a8e7b259"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_truncates_in_narrow_terminal.snap": {
+    "fork_sha256": "e5b432ec0e68b8cf6515b37b64e186a19c08ef466dfb0d8375203a2cd1590899",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "b117aeb6a83e9a9333f9d6fcb3c05d79ca4cb477fd5ff488752bedff0a6b1b64"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_uses_default_reasoning_when_config_empty.snap": {
+    "fork_sha256": "5379d9923441c948532ccd09c1b35823df43d091db2ba285a184d451d4d84000",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "c94ec09ca2213a34378dcfcdbe6f97d4e5cdf259ce0938c987c8118917debb9c"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_uses_generic_limit_labels_for_unsupported_windows.snap": {
+    "fork_sha256": "7af08c650418460566aaa31540930c44237682aad6d22cfd6009816261418a8b",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "5831d853789a0e92ab186e584c80d4ecebc606dd6363f447b49d500db040173a"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__status_snapshot_wraps_enterprise_monthly_credit_details_in_narrow_terminal.snap": {
+    "fork_sha256": "17455b81d36d2c31ea6e9cd3e0191a3aa53dc021e19b0550fe36adf43082763d",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "2c0678e4a15d636e43ec52304f10c446863bb78be62564d1526cb992ac971d64"
+  },
+  "codex-rs/tui/src/status/snapshots/codex_tui__status__tests__transcript_overlay_status_rate_limit_refresh.snap": {
+    "fork_sha256": "0bac38df16eadb7b7bc79c2f7f06dad30799768a475c9ae2c5701870e391feb4",
+    "reason": "Release version 0.153.3 and resulting whitespace",
+    "upstream_sha256": "7bb29a00b99fe1dbc8666acb452839bdad118c63e1fe3f1b42d4f4524f6a9caa"
+  }
+}
