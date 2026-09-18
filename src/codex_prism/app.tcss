@@ -64,3 +64,8 @@ ModalScreen { align: center middle; background: $background 75%; }
 #session-count { height: auto; max-height: 3; color: $text-muted; margin: 1 0; }
 #session-preview { height: 3; color: $text-muted; margin: 1 0; }
 #session-dialog .dialog-actions Button { min-width: 8; width: 1fr; }
+SessionPicker.compact #session-dialog { width: 100%; height: 100%; padding: 0 1; }
+SessionPicker.compact .dialog-title { height: 1; }
+SessionPicker.compact #session-count { margin: 0; }
+SessionPicker.compact #session-preview { height: 2; margin: 0; }
+SessionPicker.short #session-preview { display: none; }

@@ -58,9 +58,19 @@ class SessionPicker(ModalScreen[str | None]):
                 yield Button("Resume", id="session-resume", variant="primary", disabled=True)
 
     def on_mount(self):
+        self.update_layout()
         self.query_one("#session-retry").display = False
         self.query_one("#session-search").focus()
         self.load_sessions()
+
+    def on_resize(self):
+        self.update_layout()
+
+    def update_layout(self):
+        # Reserve room for actual rows on laptop/SSH terminals. Fixed chrome
+        # formerly consumed almost the entire dialog at 24–26 lines high.
+        self.set_class(self.app.size.height < 32, "compact")
+        self.set_class(self.app.size.height < 24, "short")
 
     @work(exclusive=True, group="session-list")
     async def load_sessions(self):

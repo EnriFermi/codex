@@ -527,16 +527,20 @@ class Prism(App):
         if matches:
             menu.highlighted = 0
         self.main_screen.query_one("#composer-help", Static).update(
-            "↑/↓ choose · Tab / Enter complete · Esc close"
+            "↑/↓ choose · Enter runs · Tab completes · Esc closes"
             if matches
             else command_help(prompt.text)
         )
 
-    def complete_command(self, text: str):
+    def complete_command(self, text: str, *, submit: bool = False):
         prompt = self.main_screen.query_one("#composer", Prompt)
         prompt.load_text(text)
         prompt.move_cursor((0, len(text)))
         prompt.focus()
+        # Enter/click activates a complete command. Tab only edits the draft;
+        # commands such as /theme still need an argument from the next menu.
+        if submit and not suggestions(text):
+            prompt.action_submit()
 
     @on(Prompt.Completion)
     def command_key(self, event: Prompt.Completion):
@@ -550,12 +554,14 @@ class Prism(App):
             step = -1 if event.action == "up" else 1
             menu.highlighted = ((menu.highlighted or 0) + step) % menu.option_count
         elif menu.highlighted is not None:
-            self.complete_command(menu.get_option_at_index(menu.highlighted).id)
+            self.complete_command(
+                menu.get_option_at_index(menu.highlighted).id, submit=event.action == "enter"
+            )
 
     @on(OptionList.OptionSelected, "#command-menu")
     def command_selected(self, event: OptionList.OptionSelected):
         event.stop()
-        self.complete_command(event.option.id)
+        self.complete_command(event.option.id, submit=True)
 
     @work(group="send")
     async def send_prompt(self, text: str):

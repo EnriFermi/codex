@@ -301,10 +301,11 @@ class Prompt(TextArea):
     async def _on_key(self, event):
         # TextArea consumes Enter before ordinary bindings. Handle it here;
         # terminals which encode Ctrl+Enter as Enter can now send too.
-        if self.completion_open and event.key in {"up", "down", "tab", "enter", "escape"}:
+        submit_keys = {"enter", "ctrl+enter", "alt+enter", "ctrl+j"}
+        if self.completion_open and event.key in {"up", "down", "tab", "escape"} | submit_keys:
             event.stop()
             event.prevent_default()
-            self.post_message(self.Completion(event.key))
+            self.post_message(self.Completion("enter" if event.key in submit_keys else event.key))
         elif event.key in {"enter", "shift+enter", "ctrl+n"}:
             event.stop()
             event.prevent_default()

@@ -158,8 +158,7 @@ async def test_slash_menu_filter_navigation_completion_and_escape():
         assert menu.option_count == 3
         await pilot.press("down", "enter")
         assert prompt.text == "/theme ember"
-        assert not menu.display and sent == []
-        await pilot.press("enter")
+        assert not menu.display
         assert sent == ["/theme ember"]
         prompt.load_text("/")
         await pilot.pause()
@@ -174,8 +173,12 @@ async def test_slash_menu_mouse_selection_and_unknown_command_preserve_draft():
     async with app.run_test(size=(100, 35)) as pilot:
         await pilot.press("i", "slash", "h")
         await pilot.click("#command-menu", offset=(3, 1))
+        from codex_prism.widgets import DetailScreen
+
+        assert isinstance(app.screen, DetailScreen)
+        await pilot.press("escape")
         prompt = app.query_one("#composer", Prompt)
-        assert prompt.text == "/help" and prompt.has_focus
+        assert prompt.text == "" and prompt.has_focus
         prompt.load_text("/unknown important draft")
         await pilot.pause()
         assert not app.query_one("#command-menu").display

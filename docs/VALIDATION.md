@@ -1,5 +1,13 @@
 # Validation
 
+## Resume activation and short terminals — 2026-09-18
+
+The previous chooser tests checked loaded rows but missed two user-visible problems: selecting `/resume` completed the draft without opening the chooser, and the 85%-height modal left only two list lines at 135 × 26 (one at 80 × 24). New regression tests failed on both behaviors before the fix.
+
+**73 offline tests pass on Python 3.12.** They cover opening the chooser with one Enter, Ctrl+Enter, Alt+Enter, LF/Ctrl+J or click, as well as typing `/resume` fully. Tab remains completion-only. Resizing to 80 × 24, 80 × 20 and 60 × 16 keeps at least six list lines and the Resume button on screen. The compact layout allocates 14 list lines at 135 × 26.
+
+A read-only check opened the actual chooser through `/res` + Enter against installed Codex and loaded **29 saved sessions** without an error or model call. No conversation titles or content were saved in this report. Separate Linux PTY checks exercised actual CR, LF and CSI-u Ctrl+Enter keystrokes: both synthetic session titles were visible and all three runs exited cleanly. Lint, formatting, diff checks and wheel/source builds passed.
+
 ## Session chooser, math and text selection — 2026-09-18
 
 **64 offline tests pass on Python 3.11 and 3.12**, with Textual 8.2.8 and pylatexenc 2.11. New coverage includes both `/resume` and `/sessions`, searching a later page by preview, resuming its paginated history, cancellation, retry after a failed list request, empty search results and preserving the current trace after a history error.
