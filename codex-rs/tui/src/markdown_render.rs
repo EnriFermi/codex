@@ -333,6 +333,9 @@ pub(crate) fn render_markdown_lines_with_width_cwd_and_hidden_link_destinations(
     cwd: Option<&Path>,
     is_hidden_link_destination: &dyn Fn(&str) -> bool,
 ) -> Vec<HyperlinkLine> {
+    let prism = crate::prism::settings();
+    let math = (prism.enabled && prism.math).then(|| crate::prism_math::render(input));
+    let input = math.as_deref().unwrap_or(input);
     let mut options = Options::empty();
     options.insert(Options::ENABLE_STRIKETHROUGH);
     options.insert(Options::ENABLE_TABLES);

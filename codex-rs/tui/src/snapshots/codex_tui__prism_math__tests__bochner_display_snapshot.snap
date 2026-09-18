@@ -1,0 +1,6 @@
+---
+source: tui/src/prism_math_tests.rs
+assertion_line: 38
+expression: "lines.lines.iter().map(ToString::to_string).collect::<Vec<_>>().join(\"\\n\")"
+---
+For B=ℝ², ∫₀¹(t,t²) dt=(½,⅓).
