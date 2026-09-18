@@ -1,3 +1,18 @@
+# Codex Prism — native fork
+
+This fork keeps the native Codex CLI, command handlers, permissions, session picker,
+keymaps and agent engine. Prism adds presentation settings for complete command
+text, colored reasoning, output previews and terminal math.
+
+**[Installation, configuration and upstream updates](prism/README.md)** ·
+**[Validation and limits](prism/VALIDATION.md)** ·
+**[Previous Python client](https://github.com/EnriFermi/codex/tree/legacy/prism-python)**
+
+The Python client has been retired as the default interface. Its history remains
+on `legacy/prism-python`. The documentation below is the original upstream README.
+
+---
+
 <p align="center"><strong>Codex CLI</strong> is a coding agent from OpenAI that runs locally on your computer.
 <p align="center">
   <img src="https://github.com/openai/codex/blob/main/.github/codex-cli-splash.png" alt="Codex CLI splash" width="80%" />
