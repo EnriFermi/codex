@@ -1,0 +1,40 @@
+name: Check native Codex updates
+on:
+  schedule:
+    - cron: '37 6 * * *'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: prism-native-upstream-check
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 prism/check_update.py
+      - name: Propose the candidate report
+        if: steps.candidate.outputs.update == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: automation/native-codex-update
+          add-paths: prism/upstream-candidate.json
+          commit-message: 'Record upstream ${{ steps.candidate.outputs.version }} candidate'
+          title: 'Native Codex update available: ${{ steps.candidate.outputs.version }}'
+          body: |
+            A newer stable native Codex release is available.
+            This PR records availability only; it does not merge upstream,
+            change the pinned baseline, install a binary or establish compatibility.
+
+            Follow prism/README.md: prepare an update branch, inspect the merge,
+            check source parity, run the native TUI suite, build and check the
+            terminal commands before switching the installed package.
+          delete-branch: true

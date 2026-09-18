@@ -1,0 +1,11 @@
+# Restart Codex Prism after changing this file.
+# Shell syntax colors: use the native /theme command or ~/.codex/themes/*.tmTheme.
+full_commands = true
+reasoning_in_chat = true
+math = true
+# Show this many lines from EACH end of command output. Ctrl+T opens the transcript.
+output_preview_lines = 4
+# Terminal color names, indexed colors, and #RRGGBB are supported.
+reasoning_color = "magenta"
+command_color = "cyan"
+output_color = "gray"

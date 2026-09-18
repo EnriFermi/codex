@@ -1,0 +1,7 @@
+{
+  "tag": "rust-v0.155.0",
+  "url": "https://github.com/openai/codex/releases/tag/rust-v0.155.0",
+  "published_at": "2026-09-17T23:14:43Z",
+  "current_tag": "rust-v0.153.3",
+  "validation": "Not merged or tested. Prepare and validate an update branch before installing."
+}

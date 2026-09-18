@@ -12,11 +12,13 @@ jobs:
   rust-ci-full:
     name: rust-ci-full
     uses: ./.github/workflows/rust-ci-full.yml
+    if: github.repository == 'openai/codex'
     secrets: inherit
 
   v8-canary:
     name: v8-canary
     uses: ./.github/workflows/v8-canary.yml
+    if: github.repository == 'openai/codex'
     secrets: inherit
 
   results:
@@ -24,7 +26,7 @@ jobs:
     needs:
       - rust-ci-full
       - v8-canary
-    if: ${{ always() }}
+    if: ${{ always() && github.repository == 'openai/codex' }}
     runs-on: ubuntu-24.04
     steps:
       # Postmerge runs use the pushed main commit, so this helper always comes

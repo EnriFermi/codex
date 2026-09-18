@@ -13,43 +13,50 @@ jobs:
   bazel:
     name: Bazel
     uses: ./.github/workflows/bazel.yml
+    if: github.repository == 'openai/codex'
     secrets: inherit
 
   blob-size-policy:
     name: Blob size policy
     uses: ./.github/workflows/blob-size-policy.yml
+    if: github.repository == 'openai/codex'
     secrets: inherit
 
   cargo-deny:
     name: cargo-deny
     uses: ./.github/workflows/cargo-deny.yml
+    if: github.repository == 'openai/codex'
     secrets: inherit
 
   codespell:
     name: Codespell
     uses: ./.github/workflows/codespell.yml
+    if: github.repository == 'openai/codex'
     secrets: inherit
 
   repo-checks:
     name: repo-checks
     uses: ./.github/workflows/repo-checks.yml
+    if: github.repository == 'openai/codex'
     secrets: inherit
 
   rust-ci:
     name: rust-ci
     uses: ./.github/workflows/rust-ci.yml
+    if: github.repository == 'openai/codex'
     secrets: inherit
 
   sdk:
     name: sdk
     uses: ./.github/workflows/sdk.yml
+    if: github.repository == 'openai/codex'
     secrets: inherit
 
   required:
     name: CI required
     # Without `always()`, GitHub skips this job after a failed dependency and a
     # required check can appear successful instead of reporting the failure.
-    if: ${{ always() }}
+    if: ${{ always() && github.repository == 'openai/codex' }}
     needs:
       - bazel
       - blob-size-policy

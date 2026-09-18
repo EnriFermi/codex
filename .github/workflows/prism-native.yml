@@ -1,0 +1,35 @@
+name: Prism native
+on:
+  push:
+    branches: [main, prism-native]
+  pull_request: {}
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  parity:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: python3 prism/check_parity.py
+      - run: bash -n prism/build.sh prism/sync-upstream.sh prism/test.sh
+  tui:
+    runs-on: ubuntu-24.04
+    env:
+      CC: clang
+      CXX: clang++
+      CARGO_BUILD_JOBS: 3
+      CARGO_PROFILE_DEV_DEBUG: 0
+      CARGO_PROFILE_TEST_DEBUG: 0
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - run: sudo apt-get update && sudo apt-get install -y clang libclang-dev libssl-dev pkg-config
+      - run: rustup show active-toolchain
+        working-directory: codex-rs
+      - run: cargo install --locked just cargo-nextest
+      - run: bash prism/test.sh
