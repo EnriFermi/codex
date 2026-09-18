@@ -4,7 +4,7 @@ import pytest
 from rich.console import Console
 
 from codex_prism.config import Settings
-from codex_prism.math_rendering import render_math
+from codex_prism.math_rendering import math_parser, outer_box, render_math
 from codex_prism.rendering import prose
 
 
@@ -86,3 +86,44 @@ def test_trailing_prose_and_incomplete_delimiters_preserved():
     assert "Before x² after." in plain(r"Before \[x^2\] after.")
     assert r"\(\frac{a}" in plain(r"Streaming \(\frac{a}")
     assert "**" not in plain(r"**Bold** with \(x^2\)")
+
+
+def test_boxed_bochner_formula_and_common_math_formatting():
+    source = r"""For a strongly measurable function, **integrability** means:
+\[
+\boxed{\int_\Omega\|f(\omega)\|_B\,d\mu(\omega)<\infty.}
+\]
+The limit is in the norm of the Banach space.
+"""
+    text = plain(source)
+    assert "∫_Ω‖f(ω)‖_B dμ(ω)<∞." in text
+    assert "╭" in text and "╰" in text  # Box survives as a terminal frame.
+    assert "\\" not in text and "**" not in text
+    assert render_math(r"\displaystyle\boxed{\frac12}") == "½"
+    assert render_math(r"\boldsymbol{\alpha}+\bm{x}") == "α+x"
+    assert outer_box(r"\boxed{\frac{a}{b}}")
+    assert not outer_box(r"\boxed{x}+\boxed{y}")
+    assert not outer_box(r"\boxed{x")
+
+
+@pytest.mark.parametrize("opening,closing", [(r"\[", r"\]"), ("$$", "$$")])
+@pytest.mark.parametrize("prefix", ["", "> ", "  "])
+def test_display_math_interrupts_prose_without_blank_lines(opening, closing, prefix):
+    before = "- Before" if prefix == "  " else prefix + "Before"
+    source = "\n".join(
+        [before, prefix + opening, prefix + r"\frac12", prefix + closing, prefix + "After"]
+    )
+    tokens = math_parser().parse(source)
+    blocks = [t for t in tokens if t.type == "math_block"]
+    assert len(blocks) == 1
+    assert render_math(blocks[0].content) == "½"
+    assert [t.content for t in tokens if t.type == "inline"] == ["Before", "After"]
+    text = plain(source)
+    assert "Before" in text and "After" in text and "½" in text
+    assert not any("Before" in line and "½" in line for line in text.splitlines())
+
+
+def test_math_in_indented_and_fenced_code_is_not_rendered():
+    for source in ["    \\[\\boxed{\\frac12}\\]", "```latex\n\\[\\boxed{\\frac12}\\]\n```"]:
+        text = plain(source)
+        assert r"\boxed{\frac12}" in text and "½" not in text

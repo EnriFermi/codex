@@ -1,5 +1,11 @@
 # Validation
 
+## Markdown and boxed display math — 2026-09-18
+
+**111 offline tests pass on Python 3.12.** A recorded Bochner-integral answer reproduced two rendering bugs: unsupported `\\boxed` left the entire formula as raw LaTeX, and display math adjacent to prose was parsed inline. Common math wrappers now render, outer boxes receive a terminal frame, and both display delimiters interrupt paragraphs without requiring blank lines. The original recorded answer was re-rendered successfully; its Markdown/LaTeX source was not changed.
+
+Regression checks cover headings, bold/italic, links, lists, tables, literal code, boxed equations, display math in lists/quotes, streaming completion, copy and export. Existing math, text-selection, command and session tests also pass. Lint, formatting and package build pass. Synthetic rendered views were inspected at 120 × 45 and 80 × 32 cells; [the new screenshot](prism-markdown.png) contains only synthetic content. No model turn was needed for this fix.
+
 ## Original Prism restored and session settings — 2026-09-18
 
 The default launcher and GitHub `main` use the original Textual interface again. The native experiment is preserved on `archive/prism-native`, without rewriting history. The restore keeps card rendering, folding, sidebar navigation, live received reasoning, Markdown math, selection/copy, resume picker, and TOML/CSS customization.

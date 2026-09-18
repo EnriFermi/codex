@@ -16,6 +16,7 @@ from pylatexenc.latexwalker import LatexWalker, LatexWalkerError, get_default_la
 from pylatexenc.macrospec import MacroSpec, MacroStandardArgsParser, SpecialsSpec
 from rich.markdown import Markdown, MarkdownElement
 from rich.padding import Padding
+from rich.panel import Panel
 from rich.text import Text
 
 SUPERSCRIPT = dict(zip("0123456789+-=()in", "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁱⁿ"))
@@ -38,7 +39,13 @@ SYMBOLS = {
     "bigr": "",
     "Bigl": "",
     "Bigr": "",
+    "displaystyle": "",
+    "textstyle": "",
+    "scriptstyle": "",
+    "scriptscriptstyle": "",
+    "mathstrut": "",
 }
+WRAPPERS = {"boxed", "fbox", "bm", "boldsymbol"}
 FORBIDDEN = {"input", "include", "includegraphics", "write", "openout", "read", "def", "newcommand"}
 
 
@@ -47,6 +54,8 @@ class MathText(LatexNodes2Text):
         name = node.macroname
         if name in SYMBOLS:
             return SYMBOLS[name]
+        if name in WRAPPERS:
+            return self._groupnodecontents_to_text(node.nodeargd.argnlist[-1])
         if name in {"frac", "dfrac", "tfrac"}:
             args = node.nodeargd.argnlist
             a, b = (self._groupnodecontents_to_text(arg).strip() for arg in args[-2:])
@@ -117,6 +126,12 @@ def math_context():
             MacroSpec("operatorname", "*{"),
             MacroSpec("dfrac", "{{"),
             MacroSpec("tfrac", "{{"),
+            *(MacroSpec(name, "{") for name in WRAPPERS),
+            *(
+                MacroSpec(name, "")
+                for name in SYMBOLS
+                if name.endswith("style") or name == "mathstrut"
+            ),
         ],
     )
     return context
@@ -156,11 +171,15 @@ def bracket_inline(state, silent):
     return True
 
 
-def bracket_block(state, start_line, end_line, silent):
-    start = state.bMarks[start_line] + state.tShift[start_line]
-    if not state.src.startswith(r"\[", start):
+def display_math_block(state, start_line, end_line, silent):
+    if state.is_code_block(start_line):
         return False
-    end = state.src.find(r"\]", start + 2)
+    start = state.bMarks[start_line] + state.tShift[start_line]
+    opening = state.src[start : start + 2]
+    if opening not in {r"\[", "$$"}:
+        return False
+    closing = r"\]" if opening == r"\[" else "$$"
+    end = state.src.find(closing, start + 2)
     if end < 0 or end >= state.bMarks[end_line]:
         return False
     last_line = start_line
@@ -168,10 +187,13 @@ def bracket_block(state, start_line, end_line, silent):
         last_line += 1
     if state.src[end + 2 : state.eMarks[last_line]].strip():
         return False  # Preserve trailing prose through the inline rule.
-    if not silent:
-        token = state.push("math_block", "", 0)
-        token.content = state.src[start + 2 : end]
-        token.map = [start_line, last_line + 1]
+    if silent:
+        return True
+    token = state.push("math_block", "", 0)
+    # getLines removes quote/list prefixes using the block parser's offsets.
+    content = state.getLines(start_line, last_line + 1, state.blkIndent, False).strip()
+    token.content = content[2:-2]
+    token.map = [start_line, last_line + 1]
     state.line = last_line + 1
     return True
 
@@ -186,9 +208,35 @@ def math_parser():
         allow_digits=False,
         double_inline=True,
     )
+    # Display math may interrupt prose, just like a fenced code block. Without
+    # these alternatives, a formula immediately after a sentence is swallowed
+    # into its paragraph and all line breaks collapse to spaces.
+    parser.block.ruler.at(
+        "math_block", display_math_block, {"alt": ["paragraph", "reference", "blockquote", "list"]}
+    )
     parser.inline.ruler.before("escape", "prism_bracket_math", bracket_inline)
-    parser.block.ruler.before("fence", "prism_bracket_math", bracket_block)
     return parser
+
+
+def outer_box(source: str) -> bool:
+    """Only frame an equation when its entire content has a box wrapper."""
+    source = source.strip()
+    opening = re.match(r"\\(?:boxed|fbox)\s*\{", source)
+    if not opening:
+        return False
+    depth = 1
+    escaped = False
+    for i in range(opening.end(), len(source)):
+        if escaped:
+            escaped = False
+            continue
+        if source[i] == "\\":
+            escaped = True
+            continue
+        depth += (source[i] == "{") - (source[i] == "}")
+        if depth == 0:
+            return i == len(source) - 1
+    return False
 
 
 class MathBlock(MarkdownElement):
@@ -196,10 +244,15 @@ class MathBlock(MarkdownElement):
     def create(cls, markdown, token):
         element = cls()
         element.text = Text(render_math(token.content), style=markdown.math_style)
+        element.boxed = outer_box(token.content)
+        element.math_style = markdown.math_style
         return element
 
     def __rich_console__(self, console, options):
-        yield Padding(self.text, (0, 2))
+        yield Padding(
+            Panel.fit(self.text, border_style=self.math_style) if self.boxed else self.text,
+            (0, 2),
+        )
 
 
 class MathMarkdown(Markdown):
