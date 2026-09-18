@@ -17,6 +17,7 @@ from textual.widgets.option_list import Option
 from .commands import command_help, suggestions
 from .config import Settings, state_path
 from .model import Entry, Trace, pretty
+from .session_settings import PERMISSIONS, Choice, ChoiceScreen, SessionSettings, list_models
 from .sessions import SessionPicker
 from .storage import Journal, export_markdown, private_write
 from .transport import AppServer
@@ -51,6 +52,9 @@ Type / for descriptions; ↑/↓ selects, Enter runs, Tab completes, Esc closes.
 /new            Start a new conversation
 /resume [ID]    Search and choose a saved conversation (ID is optional)
 /sessions       Open the same conversation chooser
+/permissions    Change this conversation's file/network access and approvals
+/model          Choose the model and reasoning effort for this conversation
+/status         Show current conversation settings and token usage
 /theme NAME     prism, ember, daylight
 /export [PATH]  Save the full transcript (never overwrites)
 /stop           Interrupt the active turn
@@ -115,6 +119,7 @@ class Prism(App):
         self.initial_prompt = prompt
         self.offline = offline
         self.server: AppServer | None = None
+        self.session_settings: SessionSettings | None = None
         self.journal: Journal | None = None
         self.pending_events: deque[dict] = deque()
         self.pending_requests: asyncio.Queue = asyncio.Queue()
@@ -266,6 +271,13 @@ class Prism(App):
         self.main_screen.query_one("#empty").display = False
 
     def incoming(self, message: dict):
+        if self.session_settings:
+            self.session_settings.incoming(message)
+            if (
+                message.get("method") == "thread/settings/updated"
+                and message.get("params", {}).get("threadId") == self.trace.thread_id
+            ):
+                self.trace.model = self.session_settings.values.get("model", self.trace.model)
         if self.journal:
             self.journal.write(message)
         if "id" in message and "method" in message:
@@ -436,7 +448,9 @@ class Prism(App):
         try:
             if self.settings.record:
                 self.journal = Journal(state_path() / "traces", self.settings.compress_recordings)
-            self.server = AppServer(self.binary, self.overrides, self.incoming, self.sent)
+            self.server = AppServer(
+                self.binary, self.overrides, self.incoming, self.sent, experimental_api=True
+            )
             await self.server.start()
             await self.open_thread(self.resume_id)
             self.ready = True
@@ -483,6 +497,7 @@ class Prism(App):
                 if not cursor:
                     break
         self.trace.thread_id = thread["id"]
+        self.session_settings = SessionSettings(result)
         self.trace.cwd = result.get("cwd", thread.get("cwd", self.cwd))
         self.trace.model = result.get("model", "Codex")
         self.incoming(
@@ -634,6 +649,30 @@ class Prism(App):
             self.export_trace(Path(arg).expanduser() if arg else None)
         elif command == "/stop":
             await self.interrupt_turn()
+        elif command == "/status":
+            self.push_screen(
+                DetailScreen(
+                    "Conversation status",
+                    pretty(
+                        {
+                            "thread": self.trace.thread_id,
+                            "status": self.trace.status,
+                            "cwd": self.trace.cwd or self.cwd,
+                            "settings": self.session_settings.values
+                            if self.session_settings
+                            else {},
+                            "usage": self.trace.usage,
+                        }
+                    ),
+                    self.settings,
+                )
+            )
+        elif command in {"/permissions", "/approvals", "/model"}:
+            self.require_idle_session()
+            if command == "/model":
+                await self.choose_model()
+            else:
+                await self.choose_permissions()
         elif command in {"/new", "/resume", "/sessions"}:
             if self.switching:
                 raise ValueError("A conversation is still loading; your command is preserved")
@@ -647,6 +686,97 @@ class Prism(App):
             raise ValueError(
                 f"{command} is not implemented in Prism. Type / to see supported commands."
             )
+
+    def require_idle_session(self):
+        if not self.server or not self.ready or not self.session_settings or self.offline:
+            raise ValueError("Not connected to Codex")
+        if self.trace.turn_id or self.sending or self.switching:
+            raise ValueError(
+                "Stop the active turn with Ctrl+X before changing conversation settings"
+            )
+
+    async def apply_session_settings(self, changes: dict):
+        self.require_idle_session()
+        self.switching = True
+        try:
+            await self.session_settings.apply(self.server, changes)
+            self.trace.model = self.session_settings.values.get("model", self.trace.model)
+            self.incoming(
+                {
+                    "method": "prism/note",
+                    "params": {"text": "Conversation settings applied\n" + pretty(changes)},
+                }
+            )
+            self.refresh_status()
+        finally:
+            self.switching = False
+
+    async def choose_permissions(self):
+        values = self.session_settings.values
+        profile = (values.get("activePermissionProfile") or {}).get("id")
+        selected = await self.push_screen_wait(
+            ChoiceScreen(
+                "Permissions",
+                f"Current: {profile or values.get('sandboxPolicy', {}).get('type', 'custom')} · approvals: {pretty(values.get('approvalPolicy'))}\nApplies to this conversation. Enter selects; Apply confirms.",
+                PERMISSIONS,
+                profile,
+            )
+        )
+        if selected:
+            await self.apply_session_settings(
+                {
+                    "permissions": selected,
+                    "approvalPolicy": "never"
+                    if selected == ":danger-full-access"
+                    else "on-request",
+                    "approvalsReviewer": "user",
+                }
+            )
+
+    async def choose_model(self):
+        models = await list_models(self.server)
+        if not models:
+            raise ValueError("Codex returned no available models")
+        selected = await self.push_screen_wait(
+            ChoiceScreen(
+                "Model",
+                f"Current: {self.trace.model}\nChoose a model, then its reasoning effort.",
+                [Choice(m["model"], m["displayName"], m["description"]) for m in models],
+                self.trace.model,
+            )
+        )
+        if not selected:
+            return
+        model = next(m for m in models if m["model"] == selected)
+        efforts = model.get("supportedReasoningEfforts", [])
+        changes = {"model": selected}
+        if efforts:
+            current = self.session_settings.values.get("effort")
+            default = (
+                current
+                if selected == self.trace.model
+                and any(e["reasoningEffort"] == current for e in efforts)
+                else model.get("defaultReasoningEffort")
+            )
+            effort = await self.push_screen_wait(
+                ChoiceScreen(
+                    "Reasoning effort",
+                    f"Model: {selected}\nApply changes both model and effort for this conversation.",
+                    [
+                        Choice(
+                            e["reasoningEffort"],
+                            e["reasoningEffort"].capitalize(),
+                            e["description"],
+                        )
+                        for e in efforts
+                    ],
+                    default,
+                )
+            )
+            if not effort:
+                return
+            changes["effort"] = effort
+        await self.apply_session_settings(changes)
 
     @work(group="session-picker", exclusive=True)
     async def choose_session(self):
@@ -667,6 +797,7 @@ class Prism(App):
             raise ValueError("Stop the active turn with Ctrl+X before switching sessions")
         self.switching = True
         old_trace = self.trace
+        old_settings = self.session_settings
         self.trace = Trace()
         try:
             await self.open_thread(resume_id)
@@ -677,6 +808,7 @@ class Prism(App):
             self.rebuild_outline()
         except Exception:
             self.trace = old_trace
+            self.session_settings = old_settings
             raise
         finally:
             self.switching = False

@@ -273,6 +273,8 @@ class Trace:
         elif method == "prism/session":
             for attr in ("thread_id", "model", "cwd"):
                 setattr(self, attr, p.get(attr, getattr(self, attr)))
+        elif method == "thread/settings/updated" and p.get("threadId") == self.thread_id:
+            self.model = p.get("threadSettings", {}).get("model", self.model)
         elif method in {"item/commandExecution/terminalInteraction", "item/mcpToolCall/progress"}:
             return [self.add("system", pretty(p))]
         # Unrecognized notifications remain in the journal for protocol inspection.

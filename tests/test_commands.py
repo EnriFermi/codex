@@ -6,6 +6,7 @@ import pytest
 from codex_prism.app import Prism
 from codex_prism.commands import COMMANDS
 from codex_prism.config import Settings
+from codex_prism.session_settings import ChoiceScreen
 from codex_prism.sessions import SessionPicker
 from codex_prism.widgets import DetailScreen, Prompt
 
@@ -46,8 +47,11 @@ async def test_every_advertised_command_from_composer(tmp_path, command, monkeyp
             async with asyncio.timeout(5):
                 while not app._exit:
                     await asyncio.sleep(0.01)
-        elif command == "/help":
+        elif command in {"/help", "/status"}:
             assert isinstance(app.screen, DetailScreen)
+            await pilot.press("escape")
+        elif command in {"/permissions", "/approvals", "/model"}:
+            assert isinstance(app.screen, ChoiceScreen)
             await pilot.press("escape")
         elif command in {"/resume", "/sessions"}:
             assert isinstance(app.screen, SessionPicker)

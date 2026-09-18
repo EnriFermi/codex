@@ -55,6 +55,12 @@ Screen { background: $background; color: $foreground; }
 #hint { height: 1; padding: 0 2; color: $text-muted; }
 Footer { background: $surface; }
 ModalScreen { align: center middle; background: $background 75%; }
+#settings-dialog { width: 90%; max-width: 100; height: 90%; max-height: 28; padding: 1 2; background: $surface; border: round $accent; }
+#settings-current { height: auto; max-height: 3; color: $text-muted; }
+#settings-options { height: 1fr; min-height: 3; border: none; margin: 1 0; background: $surface; }
+#settings-options > .option-list--option-highlighted { background: $panel; color: $accent; }
+#settings-description { height: 3; color: $text-muted; }
+#settings-dialog .dialog-actions Button { min-width: 10; }
 #dialog { width: 85%; height: 85%; padding: 1 2; background: $surface; border: round $accent; }
 .dialog-title { height: 2; text-style: bold; color: $accent; }
 #dialog VerticalScroll { height: 1fr; }

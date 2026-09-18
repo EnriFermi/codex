@@ -1,5 +1,13 @@
 # Validation
 
+## Original Prism restored and session settings — 2026-09-18
+
+The default launcher and GitHub `main` use the original Textual interface again. The native experiment is preserved on `archive/prism-native`, without rewriting history. The restore keeps card rendering, folding, sidebar navigation, live received reasoning, Markdown math, selection/copy, resume picker, and TOML/CSS customization.
+
+The offline suite now covers 101 tests, including every advertised command through the composer. New checks exercise permissions at 80 × 24 and 120 × 40 cells, cancellation before Apply, full-access confirmation, atomic model/effort selection, rejection during an active turn, RPC failures, acknowledgements without applied settings, missing notifications, unrelated thread events, and paginated model lists. A stale assertion that hard-coded nine commands was updated for the expanded command registry.
+
+On installed Codex 0.153.3, an ephemeral thread confirmed read-only, workspace, full-access and back to read-only through `thread/settings/updated`; model listing returned five models, and changing reasoning effort was confirmed. This check executed no model turn or shell tool. Protocol checks include the experimental settings APIs. Separate PTY checks covered Enter, Ctrl+Enter as LF and CSI-u, message completion against the fake server, and clean Ctrl+Q exit. SVG views of the restored cards and permissions picker were inspected, including 80 × 24 cells.
+
 ## Command dispatch and exit — 2026-09-18
 
 **87 offline tests pass on Python 3.12.** Every advertised command (`/new`, `/resume`, `/sessions`, `/theme`, `/export`, `/stop`, `/help`, `/quit`, `/exit`) is exercised through the composer against the fake app-server. Local command dispatch is independent of the pending message request; help, theme and exit also run while disconnected or switching history. Rejected/unsupported commands retain their draft. Repeated exit requests no longer cancel the worker responsible for closing the server.

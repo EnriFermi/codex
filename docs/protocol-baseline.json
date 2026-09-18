@@ -171,8 +171,593 @@
         "threadId"
       ],
       "fields": {
+        "excludeTurns": {
+          "type": "boolean"
+        },
         "threadId": {
           "type": "string"
+        }
+      }
+    },
+    "ThreadStartResponse": {
+      "required": [
+        "approvalPolicy",
+        "approvalsReviewer",
+        "cwd",
+        "model",
+        "modelProvider",
+        "sandbox",
+        "thread"
+      ],
+      "fields": {
+        "activePermissionProfile": {
+          "anyOf": [
+            {
+              "resolved": {
+                "properties": {
+                  "extends": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approvalPolicy": {
+          "resolved": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "granular": {
+                    "properties": {
+                      "mcp_elicitations": {
+                        "type": "boolean"
+                      },
+                      "request_permissions": {
+                        "type": "boolean"
+                      },
+                      "rules": {
+                        "type": "boolean"
+                      },
+                      "sandbox_approval": {
+                        "type": "boolean"
+                      },
+                      "skill_approval": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "mcp_elicitations",
+                      "rules",
+                      "sandbox_approval"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "granular"
+                ],
+                "type": "object"
+              },
+              {
+                "enum": [
+                  "never",
+                  "on-request",
+                  "untrusted"
+                ],
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "approvalsReviewer": {
+          "allOf": [
+            {
+              "resolved": {
+                "enum": [
+                  "auto_review",
+                  "guardian_subagent",
+                  "user"
+                ],
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "model": {
+          "type": "string"
+        },
+        "reasoningEffort": {
+          "anyOf": [
+            {
+              "resolved": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sandbox": {
+          "allOf": [
+            {
+              "resolved": {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "excludeSlashTmp": {
+                        "type": "boolean"
+                      },
+                      "excludeTmpdirEnvVar": {
+                        "type": "boolean"
+                      },
+                      "networkAccess": {
+                        "type": "boolean"
+                      },
+                      "type": {
+                        "enum": [
+                          "workspaceWrite"
+                        ],
+                        "type": "string"
+                      },
+                      "writableRoots": {
+                        "items": {
+                          "resolved": {
+                            "type": "string"
+                          }
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "properties": {
+                      "networkAccess": {
+                        "allOf": [
+                          {
+                            "resolved": {
+                              "enum": [
+                                "enabled",
+                                "restricted"
+                              ],
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      "type": {
+                        "enum": [
+                          "externalSandbox"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "properties": {
+                      "networkAccess": {
+                        "type": "boolean"
+                      },
+                      "type": {
+                        "enum": [
+                          "readOnly"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "properties": {
+                      "type": {
+                        "enum": [
+                          "dangerFullAccess"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ThreadResumeResponse": {
+      "required": [
+        "approvalPolicy",
+        "approvalsReviewer",
+        "cwd",
+        "model",
+        "modelProvider",
+        "sandbox",
+        "thread"
+      ],
+      "fields": {
+        "activePermissionProfile": {
+          "anyOf": [
+            {
+              "resolved": {
+                "properties": {
+                  "extends": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approvalPolicy": {
+          "resolved": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "granular": {
+                    "properties": {
+                      "mcp_elicitations": {
+                        "type": "boolean"
+                      },
+                      "request_permissions": {
+                        "type": "boolean"
+                      },
+                      "rules": {
+                        "type": "boolean"
+                      },
+                      "sandbox_approval": {
+                        "type": "boolean"
+                      },
+                      "skill_approval": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "mcp_elicitations",
+                      "rules",
+                      "sandbox_approval"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "granular"
+                ],
+                "type": "object"
+              },
+              {
+                "enum": [
+                  "never",
+                  "on-request",
+                  "untrusted"
+                ],
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "approvalsReviewer": {
+          "allOf": [
+            {
+              "resolved": {
+                "enum": [
+                  "auto_review",
+                  "guardian_subagent",
+                  "user"
+                ],
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "model": {
+          "type": "string"
+        },
+        "reasoningEffort": {
+          "anyOf": [
+            {
+              "resolved": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sandbox": {
+          "allOf": [
+            {
+              "resolved": {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "excludeSlashTmp": {
+                        "type": "boolean"
+                      },
+                      "excludeTmpdirEnvVar": {
+                        "type": "boolean"
+                      },
+                      "networkAccess": {
+                        "type": "boolean"
+                      },
+                      "type": {
+                        "enum": [
+                          "workspaceWrite"
+                        ],
+                        "type": "string"
+                      },
+                      "writableRoots": {
+                        "items": {
+                          "resolved": {
+                            "type": "string"
+                          }
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "properties": {
+                      "networkAccess": {
+                        "allOf": [
+                          {
+                            "resolved": {
+                              "enum": [
+                                "enabled",
+                                "restricted"
+                              ],
+                              "type": "string"
+                            }
+                          }
+                        ]
+                      },
+                      "type": {
+                        "enum": [
+                          "externalSandbox"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "properties": {
+                      "networkAccess": {
+                        "type": "boolean"
+                      },
+                      "type": {
+                        "enum": [
+                          "readOnly"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "properties": {
+                      "type": {
+                        "enum": [
+                          "dangerFullAccess"
+                        ],
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ThreadSettingsUpdateParams": {
+      "required": [
+        "threadId"
+      ],
+      "fields": {
+        "approvalPolicy": {
+          "anyOf": [
+            {
+              "resolved": {
+                "oneOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "granular": {
+                        "properties": {
+                          "mcp_elicitations": {
+                            "type": "boolean"
+                          },
+                          "request_permissions": {
+                            "type": "boolean"
+                          },
+                          "rules": {
+                            "type": "boolean"
+                          },
+                          "sandbox_approval": {
+                            "type": "boolean"
+                          },
+                          "skill_approval": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "mcp_elicitations",
+                          "rules",
+                          "sandbox_approval"
+                        ],
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "granular"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "enum": [
+                      "never",
+                      "on-request",
+                      "untrusted"
+                    ],
+                    "type": "string"
+                  }
+                ]
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approvalsReviewer": {
+          "anyOf": [
+            {
+              "resolved": {
+                "enum": [
+                  "auto_review",
+                  "guardian_subagent",
+                  "user"
+                ],
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "effort": {
+          "anyOf": [
+            {
+              "resolved": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "permissions": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "threadId": {
+          "type": "string"
+        }
+      }
+    },
+    "ThreadSettingsUpdatedNotification": {
+      "required": [
+        "threadId",
+        "threadSettings"
+      ],
+      "fields": {
+        "threadId": {
+          "type": "string"
+        }
+      }
+    },
+    "ModelListParams": {
+      "required": [],
+      "fields": {
+        "cursor": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "limit": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "ModelListResponse": {
+      "required": [
+        "data"
+      ],
+      "fields": {
+        "nextCursor": {
+          "type": [
+            "null",
+            "string"
+          ]
         }
       }
     },
@@ -1309,6 +1894,266 @@
             ],
             "type": "string"
           }
+        }
+      }
+    },
+    "ThreadSettings": {
+      "required": [
+        "approvalPolicy",
+        "approvalsReviewer",
+        "collaborationMode",
+        "cwd",
+        "model",
+        "modelProvider",
+        "sandboxPolicy"
+      ],
+      "fields": {
+        "activePermissionProfile": {
+          "anyOf": [
+            {
+              "resolved": {
+                "properties": {
+                  "extends": {
+                    "type": [
+                      "null",
+                      "string"
+                    ]
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approvalPolicy": {
+          "resolved": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "granular": {
+                    "properties": {
+                      "mcp_elicitations": {
+                        "type": "boolean"
+                      },
+                      "request_permissions": {
+                        "type": "boolean"
+                      },
+                      "rules": {
+                        "type": "boolean"
+                      },
+                      "sandbox_approval": {
+                        "type": "boolean"
+                      },
+                      "skill_approval": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "mcp_elicitations",
+                      "rules",
+                      "sandbox_approval"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "granular"
+                ],
+                "type": "object"
+              },
+              {
+                "enum": [
+                  "never",
+                  "on-request",
+                  "untrusted"
+                ],
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "approvalsReviewer": {
+          "resolved": {
+            "enum": [
+              "auto_review",
+              "guardian_subagent",
+              "user"
+            ],
+            "type": "string"
+          }
+        },
+        "effort": {
+          "anyOf": [
+            {
+              "resolved": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model": {
+          "type": "string"
+        },
+        "sandboxPolicy": {
+          "resolved": {
+            "oneOf": [
+              {
+                "properties": {
+                  "excludeSlashTmp": {
+                    "type": "boolean"
+                  },
+                  "excludeTmpdirEnvVar": {
+                    "type": "boolean"
+                  },
+                  "networkAccess": {
+                    "type": "boolean"
+                  },
+                  "type": {
+                    "enum": [
+                      "workspaceWrite"
+                    ],
+                    "type": "string"
+                  },
+                  "writableRoots": {
+                    "items": {
+                      "resolved": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "networkAccess": {
+                    "allOf": [
+                      {
+                        "resolved": {
+                          "enum": [
+                            "enabled",
+                            "restricted"
+                          ],
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  },
+                  "type": {
+                    "enum": [
+                      "externalSandbox"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "networkAccess": {
+                    "type": "boolean"
+                  },
+                  "type": {
+                    "enum": [
+                      "readOnly"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              },
+              {
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "dangerFullAccess"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "type"
+                ],
+                "type": "object"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "Model": {
+      "required": [
+        "defaultReasoningEffort",
+        "description",
+        "displayName",
+        "hidden",
+        "id",
+        "isDefault",
+        "model",
+        "supportedReasoningEfforts"
+      ],
+      "fields": {
+        "defaultReasoningEffort": {
+          "resolved": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "description": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "model": {
+          "type": "string"
+        },
+        "supportedReasoningEfforts": {
+          "items": {
+            "resolved": {
+              "properties": {
+                "reasoningEffort": {
+                  "resolved": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "description",
+                "reasoningEffort"
+              ],
+              "type": "object"
+            }
+          },
+          "type": "array"
         }
       }
     },

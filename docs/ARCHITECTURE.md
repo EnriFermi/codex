@@ -23,6 +23,7 @@ AppServer (dedicated subprocess, stdio JSON-RPC)
 | `math_rendering.py` | Math delimiters parsed before Markdown escapes; Unicode math, literal fallback for unknown/incomplete TeX |
 | `selectable.py` | Rich renderables materialized as styled text for Textual mouse selection |
 | `sessions.py` | Progressive session listing, preview/title/path search and conversation selection |
+| `session_settings.py` | Permission/model pickers, model pagination, confirmed thread settings |
 | `widgets.py` | Paged blocks, output folding, request dialogs |
 | `app.py` | Thread/turn lifecycle, steering, resume, navigation, search, keybindings |
 | `config.py` / `app.tcss` | Appearance contract and theme defaults |
@@ -59,6 +60,10 @@ The structural guard resolves references and compares types, enums, constraints,
 For rollback, point `--codex /absolute/path/to/older/package/bin/codex` at a retained complete package, including resources and companion executables. Prism and engine releases can be versioned independently. There is no upstream engine fork to merge.
 
 ## Updating Prism
+
+The live client opts into `experimentalApi` for `thread/settings/update` and `thread/settings/updated`. The update response acknowledges queueing; `SessionSettings` waits for the applied-settings notification before reporting success. If no notification arrives, a resume of the already loaded thread without overrides reads its actual settings; mismatches are reported as failures. Settings changes require an idle conversation and explicit Apply. Cancelling the model or effort picker changes neither. Model catalogs are paginated, and inherited/custom permission settings are retained unless the user selects a preset.
+
+The protocol guard generates schemas with `--experimental` and covers these methods, notification fields, permission profiles, model catalogs, and reasoning effort. The reviewed baseline still uses Codex 0.153.3. Upstream changes to this experimental contract require review before installation.
 
 Use a branch, implement a change, run lint/format/tests, then `uv build`. Dependencies are pinned by `uv.lock`; ordinary installs use `uv sync --locked`. Upgrade dependencies intentionally and rerun the UI tests. The GitHub Actions workflow performs the offline suite on Python 3.11 and 3.12 without Codex credentials or model calls.
 

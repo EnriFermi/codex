@@ -76,7 +76,7 @@ async def doctor(binary: str, overrides: list[str]) -> dict:
     version = subprocess.run(
         [binary, "--version"], capture_output=True, text=True, timeout=15, check=True
     ).stdout.strip()
-    server = AppServer(binary, overrides)
+    server = AppServer(binary, overrides, experimental_api=True)
     try:
         init = await server.start()
         return {

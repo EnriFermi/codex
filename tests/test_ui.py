@@ -3,6 +3,7 @@ from textual.events import Paste
 from textual.widgets import Input, OptionList
 
 from codex_prism.app import Prism
+from codex_prism.commands import COMMANDS
 from codex_prism.config import Settings
 from codex_prism.demo import demo_trace
 from codex_prism.widgets import PagedText, Prompt
@@ -144,7 +145,7 @@ async def test_slash_menu_filter_navigation_completion_and_escape():
         await pilot.press("i", "slash")
         menu = app.query_one("#command-menu", OptionList)
         prompt = app.query_one("#composer", Prompt)
-        assert menu.display and menu.option_count == 9
+        assert menu.display and menu.option_count == len(COMMANDS)
         assert app.query_one("#timeline").size.height > 0
         await pilot.press("down", "tab")
         assert prompt.text == "/resume "

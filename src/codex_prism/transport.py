@@ -21,9 +21,12 @@ class AppServer:
         overrides: list[str] | None = None,
         on_message: Callable[[dict], None] | None = None,
         on_sent: Callable[[dict], None] | None = None,
+        *,
+        experimental_api: bool = False,
     ):
         self.binary = binary
         self.overrides = overrides or []
+        self.experimental_api = experimental_api
         self.on_message = on_message or (lambda _: None)
         self.on_sent = on_sent or (lambda _: None)
         self.process: asyncio.subprocess.Process | None = None
@@ -55,7 +58,7 @@ class AppServer:
                         "title": "Codex Prism",
                         "version": "0.1.0",
                     },
-                    "capabilities": {"experimentalApi": False},
+                    "capabilities": {"experimentalApi": self.experimental_api},
                 },
             )
             await self.send({"method": "initialized", "params": {}})

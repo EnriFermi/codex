@@ -17,7 +17,34 @@ CONTRACT = {
     "InitializeParams": {"clientInfo", "capabilities"},
     "InitializeResponse": {"userAgent"},
     "ThreadStartParams": {"cwd", "model", "sandbox", "approvalPolicy"},
-    "ThreadResumeParams": {"threadId"},
+    "ThreadResumeParams": {"threadId", "excludeTurns"},
+    "ThreadStartResponse": {
+        "model",
+        "sandbox",
+        "approvalPolicy",
+        "approvalsReviewer",
+        "activePermissionProfile",
+        "reasoningEffort",
+    },
+    "ThreadResumeResponse": {
+        "model",
+        "sandbox",
+        "approvalPolicy",
+        "approvalsReviewer",
+        "activePermissionProfile",
+        "reasoningEffort",
+    },
+    "ThreadSettingsUpdateParams": {
+        "threadId",
+        "permissions",
+        "approvalPolicy",
+        "approvalsReviewer",
+        "model",
+        "effort",
+    },
+    "ThreadSettingsUpdatedNotification": {"threadId"},
+    "ModelListParams": {"cursor", "limit"},
+    "ModelListResponse": {"nextCursor"},
     "ThreadListParams": {"limit", "sortKey", "cursor", "modelProviders"},
     "ThreadTurnsListParams": {"threadId", "itemsView", "sortDirection", "limit", "cursor"},
     "TurnStartParams": {"threadId", "input"},
@@ -39,12 +66,15 @@ METHODS = {
         "thread/resume",
         "thread/list",
         "thread/turns/list",
+        "thread/settings/update",
+        "model/list",
         "turn/start",
         "turn/steer",
         "turn/interrupt",
     },
     "ServerNotification": {
         "thread/started",
+        "thread/settings/updated",
         "turn/started",
         "turn/completed",
         "item/started",
@@ -126,6 +156,36 @@ def snapshot(root):
     for name, fields in CONTRACT.items():
         document = read_schema(root, name)
         contract[name] = field_contract(name, document, document, fields)
+    for schema, definition, fields in (
+        (
+            "ThreadSettingsUpdatedNotification",
+            "ThreadSettings",
+            {
+                "model",
+                "effort",
+                "approvalPolicy",
+                "approvalsReviewer",
+                "activePermissionProfile",
+                "sandboxPolicy",
+            },
+        ),
+        (
+            "ModelListResponse",
+            "Model",
+            {
+                "model",
+                "displayName",
+                "description",
+                "hidden",
+                "defaultReasoningEffort",
+                "supportedReasoningEfforts",
+            },
+        ),
+    ):
+        document = read_schema(root, schema)
+        contract[definition] = field_contract(
+            definition, document["definitions"][definition], document, fields
+        )
     item = read_schema(root, "ItemStartedNotification")
     variants = item["definitions"]["ThreadItem"]["oneOf"]
     for kind, fields in ITEM_FIELDS.items():
@@ -181,7 +241,7 @@ def check(binary, baseline_path, env=None):
     version = subprocess.check_output([binary, "--version"], text=True, timeout=30, env=env).strip()
     with tempfile.TemporaryDirectory(prefix="prism-schema-") as temp:
         subprocess.run(
-            [binary, "app-server", "generate-json-schema", "--out", temp],
+            [binary, "app-server", "generate-json-schema", "--experimental", "--out", temp],
             check=True,
             timeout=120,
             env=env,
@@ -219,7 +279,7 @@ def main():
     if args.capture_baseline:
         with tempfile.TemporaryDirectory(prefix="prism-baseline-") as temp:
             subprocess.run(
-                [args.codex, "app-server", "generate-json-schema", "--out", temp],
+                [args.codex, "app-server", "generate-json-schema", "--experimental", "--out", temp],
                 check=True,
                 timeout=120,
             )

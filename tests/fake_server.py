@@ -4,6 +4,8 @@
 import json
 import sys
 
+settings = {}
+
 
 def send(value):
     print(json.dumps(value), flush=True)
@@ -16,6 +18,15 @@ for line in sys.stdin:
         send({"id": m["id"], "result": {"userAgent": "fake/1"}})
     elif method == "thread/start":
         thread = {"id": "test-thread", "cwd": m["params"].get("cwd", "/tmp"), "turns": []}
+        settings = {
+            "model": "test-model",
+            "effort": "medium",
+            "cwd": thread["cwd"],
+            "approvalPolicy": "on-request",
+            "approvalsReviewer": "user",
+            "activePermissionProfile": {"id": ":read-only"},
+            "sandboxPolicy": {"type": "readOnly"},
+        }
         send(
             {
                 "id": m["id"],
@@ -25,10 +36,55 @@ for line in sys.stdin:
                     "cwd": thread["cwd"],
                     "approvalPolicy": "on-request",
                     "sandbox": {"type": "readOnly"},
+                    "approvalsReviewer": "user",
+                    "activePermissionProfile": {"id": ":read-only"},
+                    "reasoningEffort": "medium",
                 },
             }
         )
         send({"method": "thread/started", "params": {"thread": thread}})
+    elif method == "model/list":
+        send(
+            {
+                "id": m["id"],
+                "result": {
+                    "data": [
+                        {
+                            "id": "test-model",
+                            "model": "test-model",
+                            "displayName": "Test model",
+                            "description": "A model for UI tests",
+                            "defaultReasoningEffort": "medium",
+                            "supportedReasoningEfforts": [
+                                {"reasoningEffort": "medium", "description": "Balanced"},
+                                {"reasoningEffort": "high", "description": "More reasoning"},
+                            ],
+                        }
+                    ],
+                    "nextCursor": None,
+                },
+            }
+        )
+    elif method == "thread/settings/update":
+        changes = dict(m["params"])
+        changes.pop("threadId")
+        if profile := changes.pop("permissions", None):
+            changes["activePermissionProfile"] = {"id": profile}
+            changes["sandboxPolicy"] = {
+                "type": {
+                    ":read-only": "readOnly",
+                    ":workspace": "workspaceWrite",
+                    ":danger-full-access": "dangerFullAccess",
+                }[profile]
+            }
+        settings.update(changes)
+        send({"id": m["id"], "result": {}})
+        send(
+            {
+                "method": "thread/settings/updated",
+                "params": {"threadId": "test-thread", "threadSettings": settings},
+            }
+        )
     elif method == "thread/list":
         older = bool(m["params"].get("cursor"))
         send(
