@@ -1,0 +1,23 @@
+{
+  "version": "0.155.1",
+  "release": "https://github.com/openai/codex/releases/tag/rust-v0.155.1",
+  "platform": "x86_64-unknown-linux-musl",
+  "asset": "codex-package-x86_64-unknown-linux-musl.tar.gz",
+  "asset_sha256": "a65b895c6ac1a73629bbe4b864640c86133e94a43b4d67b3103044e1a306d5a2",
+  "checked_at": "2026-09-19T11:29:47.131018+00:00",
+  "prism_commit": "76ced5733f9dbf65a218666bcd4a7c07e3d0a8ee",
+  "prism_tree_dirty": false,
+  "status": "structural_and_handshake_checks_passed",
+  "protocol": {
+    "codex": "codex-cli 0.155.1",
+    "result": "structural_checks_passed",
+    "baseline_codex": "codex-cli 0.153.3",
+    "baseline_sha256": "8d11c3ca9178475f49fa65e681cef526d513bd5c6d50373cdd28e4fa13c45081",
+    "contract_sha256": "ff40f45ef8deb2d93ad532ba031696adc2c19c60582fbbe994f8fa8dd0acb854",
+    "changes": [],
+    "model_validation": "not_run"
+  },
+  "handshake": "ok",
+  "model_validation": "not_run",
+  "working_engine_changed": false
+}
